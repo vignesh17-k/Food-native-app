@@ -8,41 +8,18 @@ import {
   View,
   SafeAreaView,
 } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Header from "../../components/Header";
 import { SIZES } from "../../../constants";
 import ImageLinks from "../../../assets/ImageLink";
 import CartIcon from "../../components/CartIcon";
 import Button from "../../components/Button";
-import { isEmpty } from "lodash";
-import { set_wishlist } from "../../../store/slices/WishlistSlice";
 
 const Wishlist = ({ navigation }) => {
   const wishlist_data = useSelector(
     (state: any) => state?.wishlist?.wishlist_data
   );
-  const section_data = useSelector((state: any) => state?.home?.section_data);
 
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    const extract_favorite_items = (data: any) => {
-      return data?.flatMap((item: any) => {
-        if (item?.data) {
-          return extract_favorite_items(item?.data);
-        }
-        if (item?.list) {
-          return extract_favorite_items(item?.list);
-        }
-        return item.isFavorite ? [item] : [];
-      });
-    };
-    const favorites = extract_favorite_items(section_data);
-
-    if (!isEmpty(favorites)) {
-      dispatch(set_wishlist(favorites));
-    }
-  }, [section_data]);
 
   const render_item = ({ item }) => {
     return (

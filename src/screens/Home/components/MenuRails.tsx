@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,11 +11,16 @@ import ImageLinks from "../../../../assets/ImageLink";
 import { SIZES } from "../../../../constants";
 import { FontAwesome } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
-import { head } from "lodash";
 import { update_section_data } from "../../../../store/slices/HomeSlice";
+import product from "../../../../utils/api/product";
+import { map } from "lodash";
+import { Skeleton } from "native-base";
 
-const MenuRails = ({ rail_data }: any) => {
-  const [selected_menu, set_selected_menu] = useState<any>(head(rail_data));
+const MenuRails = () => {
+  const [selected_menu, set_selected_menu] = useState<any>("");
+  const [menu_data, set_menu_data] = useState([]);
+  const [loading, set_loading] = useState(true);
+  const arr = Array.from({ length: 6 }, (v, i) => i);
   const dispatch = useDispatch();
 
   const render_menu_tabs = ({ item }) => {
@@ -39,13 +44,52 @@ const MenuRails = ({ rail_data }: any) => {
       item?.id === id ? { ...item, isFavorite: value } : { ...item }
     );
 
-    const update_rails_data = rail_data?.map((item:any) =>
+    const update_rails_data = map(menu_data, (item: any) =>
       item?.id === selected_menu?.id ? { ...item, list: data } : { ...item }
     );
 
-    dispatch(update_section_data({ section_name: "menu", section_data: update_rails_data }));
+    dispatch(
+      update_section_data({
+        section_name: "menu",
+        section_data: update_rails_data,
+      })
+    );
     set_selected_menu((prev: any) => ({ ...prev, list: data }));
   };
+
+  const handle_get_menu_rail = async () => {
+    set_loading(true);
+    try {
+      const response = await product.get_menu_rails();
+      set_selected_menu(response?.data[0]);
+      set_menu_data(response?.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      set_loading(false);
+    }
+  };
+
+  useEffect(() => {
+    handle_get_menu_rail();
+  }, []);
+
+  if (loading) {
+    return (
+      <View>
+        <View style={{ flexDirection: "row", gap: 20, marginBottom: 20 }}>
+          {map(arr, (item) => (
+            <Skeleton key={item} height={4} width={20} borderRadius={10} />
+          ))}
+        </View>
+        <View style={{ gap: 20 }}>
+          {map(arr, (item) => (
+            <Skeleton key={item} height={300} width={'100%'} borderRadius={10} />
+          ))}
+        </View>
+      </View>
+    );
+  }
 
   const render_cards = ({ item }) => {
     return (
@@ -68,7 +112,7 @@ const MenuRails = ({ rail_data }: any) => {
           </View>
 
           <TouchableOpacity
-            onPress={() => handle_favorite(item?.id, !item?.isFavorite)}
+          // onPress={() => handle_favorite(item?.id, !item?.isFavorite)}
           >
             <FontAwesome
               name={item?.isFavorite ? "heart" : "heart-o"}
@@ -79,7 +123,8 @@ const MenuRails = ({ rail_data }: any) => {
         </View>
 
         <Image
-          source={item?.image}
+          src={item?.image}
+          alt="img"
           style={item?.style ? item?.style : styles.card_image}
         />
 
@@ -96,7 +141,7 @@ const MenuRails = ({ rail_data }: any) => {
     <View style={styles.container}>
       <FlatList
         horizontal
-        data={rail_data}
+        data={menu_data}
         renderItem={render_menu_tabs}
         keyExtractor={(item) => item?.id?.toString()}
         contentContainerStyle={styles.menu_list}

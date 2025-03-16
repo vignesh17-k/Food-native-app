@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,21 +12,56 @@ import { SIZES } from "../../../../constants";
 import { FontAwesome } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
 import { update_section_data } from "../../../../store/slices/HomeSlice";
+import { map } from "lodash";
+import product from "../../../../utils/api/product";
+import { Skeleton } from "native-base";
 
-const PopularRails = ({ rail_data }: any) => {
+const PopularRails = () => {
   const dispatch = useDispatch();
+  const [popular_data, set_popular_data] = useState([]);
+  const [loading, set_loading] = useState(true);
+  const arr = Array.from({ length: 3 }, (v, i) => i);
 
-  const _rail_data = rail_data?.slice(0, 10);
+  // const handle_favorite = (id: any, value: boolean) => {
+  //   const data = map(popular_data, (item: any) =>
+  //     item?.id === id ? { ...item, isFavorite: value } : { ...item }
+  //   );
+  //   dispatch(
+  //     update_section_data({ section_name: "popular", section_data: data })
+  //   );
+  // };
 
-
-  const handle_favorite = (id: any, value: boolean) => {
-    const data = _rail_data?.map((item:any) =>
-      item?.id === id ? { ...item, isFavorite: value } : { ...item }
-    );
-    dispatch(
-      update_section_data({ section_name: "popular", section_data: data })
-    );
+  const handle_get_popular_rail = async () => {
+    set_loading(true);
+    try {
+      const response = await product.get_popular_rails();
+      set_popular_data(response?.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      set_loading(false);
+    }
   };
+
+  useEffect(() => {
+    handle_get_popular_rail();
+  }, []);
+
+  if (loading) {
+    return (
+      <View>
+        <View style={{ flexDirection: "row", justifyContent: "space-between" , marginBottom: 20}}>
+          <Skeleton height={4} width={180} borderRadius={10} />
+          <Skeleton height={4} width={10} borderRadius={10} />
+        </View>
+        <View style={{ flexDirection: "row", gap: 20 }}>
+          {map(arr, (item) => (
+            <Skeleton key={item} height={300} width={180} borderRadius={10} />
+          ))}
+        </View>
+      </View>
+    );
+  }
 
   const render_cards = (item: any) => {
     return (
@@ -44,12 +79,15 @@ const PopularRails = ({ rail_data }: any) => {
               alignItems: "center",
             }}
           >
-            <Image source={ImageLinks.calories} style={styles.icon_style} />
+            <Image
+              source={ImageLinks.calories}
+              style={styles.icon_style}
+            />
             <Text style={styles.calories}>{item?.calories} Calories</Text>
           </View>
 
           <TouchableOpacity
-            onPress={() => handle_favorite(item?.id, !item?.isFavorite)}
+          // onPress={() => handle_favorite(item?.id, !item?.isFavorite)}
           >
             <FontAwesome
               name={item?.isFavorite ? "heart" : "heart-o"}
@@ -60,7 +98,8 @@ const PopularRails = ({ rail_data }: any) => {
         </View>
 
         <Image
-          source={item?.image}
+          src={item?.image}
+          alt="img"
           style={item?.style ? item?.style : styles.card_image}
         />
 
@@ -94,7 +133,7 @@ const PopularRails = ({ rail_data }: any) => {
         </Text>
       </View>
       <FlatList
-        data={_rail_data}
+        data={popular_data}
         horizontal
         keyExtractor={(item: any) => item?.id}
         renderItem={({ item }) => render_cards(item)}

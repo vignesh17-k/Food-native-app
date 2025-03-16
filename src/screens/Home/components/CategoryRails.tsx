@@ -1,19 +1,51 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
   Image,
+  View,
 } from "react-native";
-import _ from "lodash";
+import _, { map } from "lodash";
+import product from "../../../../utils/api/product";
+import { Skeleton } from "native-base";
 
-const CategoryRail = ({rail_data}:any) => {
+const CategoryRail = () => {
   const [active_category, set_active_category] = useState();
+  const [category_data, set_category_data] = useState([]);
+  const [loading, set_loading] = useState(true);
+  const arr = Array.from({ length: 3 }, (v, i) => i);
+
+  const handle_get_categories = async () => {
+    set_loading(true);
+    try {
+      const response = await product.get_categories();
+      set_category_data(response?.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      set_loading(false);
+    }
+  };
+
+  useEffect(() => {
+    handle_get_categories();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={{ flexDirection: "row", gap: 20 }}>
+        {map(arr, (item) => (
+          <Skeleton key={item} height={60} width={180} borderRadius={10} />
+        ))}
+      </View>
+    );
+  }
 
   return (
     <FlatList
-      data={rail_data}
+      data={category_data}
       horizontal
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
@@ -25,7 +57,7 @@ const CategoryRail = ({rail_data}:any) => {
           ]}
         >
           <Image
-            source={item.icon}
+            src={item.icon}
             style={item?.style ? item?.style : styles.categoryIcon}
           />
           <Text

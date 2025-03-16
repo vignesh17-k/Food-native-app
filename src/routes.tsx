@@ -41,6 +41,6 @@ const Routes = () => {
     </Stack.Navigator>
   );
 };
-8256;
+
 
 export default Routes;

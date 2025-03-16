@@ -281,7 +281,7 @@ const mock_data = {
             name: "Featured",
             list: [
                 {
-                    id: 1,
+                    id: 21,
                     name: "Grilled Chicken Burger",
                     description: "Juicy grilled chicken patty with fresh lettuce and tomatoes",
                     categories: [1],
@@ -291,7 +291,7 @@ const mock_data = {
                     image: require("../assets/dummyData/grilled_chicken_burger.png")
                 },
                 {
-                    id: 2,
+                    id: 22,
                     name: "Veggie Pizza",
                     description: "Cheese pizza with a variety of fresh veggies",
                     categories: [8],
@@ -301,7 +301,7 @@ const mock_data = {
                     image: require("../assets/dummyData/veggie_pizza_2.png"),
                 },
                 {
-                    id: 3,
+                    id: 23,
                     name: "Grilled Salmon",
                     description: "Tender salmon grilled to perfection",
                     categories: [1, 6],
@@ -311,7 +311,7 @@ const mock_data = {
                     image: require("../assets/dummyData/grilled_salmon.png")
                 },
                 {
-                    id: 4,
+                    id: 24,
                     name: "Strawberry Cheesecake",
                     description: "Creamy cheesecake topped with fresh strawberries",
                     categories: [5],
@@ -321,7 +321,7 @@ const mock_data = {
                     image: require("../assets/dummyData/strawberry_cake.png")
                 },
                 {
-                    id: 5,
+                    id: 25,
                     name: "Buffalo Wings",
                     description: "Spicy buffalo chicken wings",
                     categories: [1],
@@ -338,7 +338,7 @@ const mock_data = {
             name: "Nearby you",
             list: [
                 {
-                    id: 6,
+                    id: 26,
                     name: "Mushroom Risotto",
                     description: "Creamy mushroom risotto",
                     categories: [7],
@@ -348,7 +348,7 @@ const mock_data = {
                     image: require("../assets/dummyData/mushroom_risotto.png")
                 },
                 {
-                    id: 7,
+                    id: 27,
                     name: "BBQ Chicken Pizza",
                     description: "BBQ chicken pizza with tangy sauce",
                     categories: [8],
@@ -358,7 +358,7 @@ const mock_data = {
                     image: require("../assets/dummyData/chicken_pizza.png")
                 },
                 {
-                    id: 35,
+                    id: 28,
                     name: "Panna Cotta",
                     description: "Silky Italian custard dessert",
                     categories: [5],
@@ -368,7 +368,7 @@ const mock_data = {
                     image: require("../assets/dummyData/panna_cotta_2.png")
                 },
                 {
-                    id: 8,
+                    id: 29,
                     name: "Falafel Wrap",
                     description: "Crispy falafel wrap with hummus",
                     categories: [1],
@@ -378,7 +378,7 @@ const mock_data = {
                     image: require("../assets/dummyData/falafel_wrap.png")
                 },
                 {
-                    id: 10,
+                    id: 30,
                     name: "Beef Steak",
                     description: "Juicy grilled beef steak",
                     categories: [1],
@@ -394,7 +394,7 @@ const mock_data = {
             name: "Popular",
             list: [
                 {
-                    id: 1,
+                    id: 31,
                     name: "Steak Sandwich",
                     description: "Grilled steak in a sandwich",
                     categories: [1],
@@ -404,7 +404,7 @@ const mock_data = {
                     image: require("../assets/dummyData/steak_sandwich.png")
                 },
                 {
-                    id: 2,
+                    id: 32,
                     name: "Tuna Salad",
                     description: "Fresh tuna with mixed greens",
                     categories: [6],
@@ -414,7 +414,7 @@ const mock_data = {
                     image: require("../assets/dummyData/tuna_salad.png")
                 },
                 {
-                    id: 3,
+                    id: 33,
                     name: "Macarons",
                     description: "Assorted French macarons",
                     categories: [5],
@@ -424,7 +424,7 @@ const mock_data = {
                     image: require("../assets/dummyData/macarons.png")
                 },
                 {
-                    id: 41,
+                    id: 34,
                     name: "Berry Smoothie",
                     description: "Blend of fresh berries and yogurt",
                     categories: [2],
@@ -434,7 +434,7 @@ const mock_data = {
                     image: require("../assets/dummyData/berry_smoothie.png")
                 },
                 {
-                    id: 71,
+                    id: 35,
                     name: "Penne Arrabbiata",
                     description: "Penne pasta with spicy tomato sauce",
                     categories: [4],
@@ -450,7 +450,7 @@ const mock_data = {
             name: "Newest",
             list: [
                 {
-                    id: 53,
+                    id: 36,
                     name: "Shrimp Fried Rice",
                     description: "Savory rice with juicy shrimp",
                     categories: [3],
@@ -460,7 +460,7 @@ const mock_data = {
                     image: require("../assets/dummyData/shrimp_rice.png")
                 },
                 {
-                    id: 63,
+                    id: 37,
                     name: "Quinoa Salad",
                     description: "Protein-packed quinoa with veggies",
                     categories: [4],
@@ -470,7 +470,7 @@ const mock_data = {
                     image: require("../assets/dummyData/salad_2.png")
                 },
                 {
-                    id: 20,
+                    id: 38,
                     name: "Tom Yum Soup",
                     description: "Spicy Thai soup with shrimp",
                     categories: [3],
@@ -480,7 +480,7 @@ const mock_data = {
                     image: require("../assets/dummyData/soup.png")
                 },
                 {
-                    id: 17,
+                    id: 39,
                     name: "Sweet Potato Fries",
                     description: "Crispy sweet potato fries",
                     categories: [1],
@@ -490,7 +490,7 @@ const mock_data = {
                     image: require("../assets/dummyData/fried_potato.png")
                 },
                 {
-                    id: 16,
+                    id: 40,
                     name: "Peking Duck",
                     description: "Crispy duck with hoisin sauce",
                     categories: [1],
@@ -506,7 +506,7 @@ const mock_data = {
             name: "Trending",
             list: [
                 {
-                    id: 21,
+                    id: 41,
                     name: "Sushi Rolls",
                     description: "Fresh sushi rolls with tuna and avocado",
                     categories: [1],
@@ -516,7 +516,7 @@ const mock_data = {
                     image: require("../assets/dummyData/sushi_rolls.png")
                 },
                 {
-                    id: 22,
+                    id: 42,
                     name: "Chicken Parmesan",
                     description: "Breaded chicken topped with marinara sauce",
                     categories: [7],
@@ -526,7 +526,7 @@ const mock_data = {
                     image: require("../assets/dummyData/chicken_parmesan.png")
                 },
                 {
-                    id: 10,
+                    id: 43,
                     name: "Apple Pie",
                     description: "Classic pie with spiced apple filling",
                     categories: [6],
@@ -536,7 +536,7 @@ const mock_data = {
                     image: require("../assets/dummyData/apple_pie.png")
                 },
                 {
-                    id: 24,
+                    id: 44,
                     name: "Pulled Pork Sandwich",
                     description: "Tender pulled pork in a soft sandwich bun",
                     categories: [1],
@@ -546,7 +546,7 @@ const mock_data = {
                     image: require("../assets/dummyData/pulled_pork.png")
                 },
                 {
-                    id: 54,
+                    id: 45,
                     name: "Biryani",
                     description: "Rich Indian rice dish with spices",
                     categories: [3],
