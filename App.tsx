@@ -11,6 +11,10 @@ import { PersistGate } from "redux-persist/integration/react";
 export default function App() {
   const toast = useToast();
 
+  if (__DEV__) {
+    require("./ReactotronConfig");
+  }
+
   async function on_fetch_update_async() {
     try {
       const update = await Updates.checkForUpdateAsync();

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -10,26 +10,43 @@ import {
 import ImageLinks from "../../../../assets/ImageLink";
 import { SIZES } from "../../../../constants";
 import { FontAwesome } from "@expo/vector-icons";
-import { useDispatch } from "react-redux";
-import { update_section_data } from "../../../../store/slices/HomeSlice";
-import { map } from "lodash";
+import { useDispatch, useSelector } from "react-redux";
+import { debounce, find, map } from "lodash";
 import product from "../../../../utils/api/product";
 import { Skeleton } from "native-base";
+import { update_wishlist } from "../../../../store/slices/WishlistSlice";
+import {
+  add_to_wishlist_action,
+  remove_from_wishlist_action,
+} from "../../../../actions/wishlist";
 
 const PopularRails = () => {
   const dispatch = useDispatch();
+  const wishlist_data = useSelector(
+    (state: any) => state.wishlist.wishlist_data
+  );
   const [popular_data, set_popular_data] = useState([]);
   const [loading, set_loading] = useState(true);
   const arr = Array.from({ length: 3 }, (v, i) => i);
 
-  // const handle_favorite = (id: any, value: boolean) => {
-  //   const data = map(popular_data, (item: any) =>
-  //     item?.id === id ? { ...item, isFavorite: value } : { ...item }
-  //   );
-  //   dispatch(
-  //     update_section_data({ section_name: "popular", section_data: data })
-  //   );
-  // };
+  const debounced_ref = useRef(
+    debounce((product_id: string, exists: any, dispatch: any, data: any) => {
+      if (exists) {
+        dispatch(remove_from_wishlist_action(product_id, data));
+      } else {
+        dispatch(add_to_wishlist_action(product_id));
+      }
+    }, 2000)
+  );
+
+  const handle_favorite = (data: any) => {
+    const product_id_exist = find(
+      wishlist_data,
+      (item: any) => item?.id === data?.id
+    );
+    dispatch(update_wishlist(data));
+    debounced_ref.current(data?.id, product_id_exist, dispatch, data);
+  };
 
   const handle_get_popular_rail = async () => {
     set_loading(true);
@@ -50,7 +67,13 @@ const PopularRails = () => {
   if (loading) {
     return (
       <View>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" , marginBottom: 20}}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 20,
+          }}
+        >
           <Skeleton height={4} width={180} borderRadius={10} />
           <Skeleton height={4} width={10} borderRadius={10} />
         </View>
@@ -64,6 +87,11 @@ const PopularRails = () => {
   }
 
   const render_cards = (item: any) => {
+    const is_favorite = find(
+      wishlist_data,
+      (wishlist: any) => wishlist?.id === item?.id
+    );
+
     return (
       <TouchableOpacity style={styles.card_container}>
         <View
@@ -79,20 +107,15 @@ const PopularRails = () => {
               alignItems: "center",
             }}
           >
-            <Image
-              source={ImageLinks.calories}
-              style={styles.icon_style}
-            />
+            <Image source={ImageLinks.calories} style={styles.icon_style} />
             <Text style={styles.calories}>{item?.calories} Calories</Text>
           </View>
 
-          <TouchableOpacity
-          // onPress={() => handle_favorite(item?.id, !item?.isFavorite)}
-          >
+          <TouchableOpacity onPress={() => handle_favorite(item)}>
             <FontAwesome
-              name={item?.isFavorite ? "heart" : "heart-o"}
+              name={is_favorite ? "heart" : "heart-o"}
               size={20}
-              color={item?.isFavorite ? "#ff6e4d" : "grey"}
+              color={is_favorite ? "#ff6e4d" : "grey"}
             />
           </TouchableOpacity>
         </View>

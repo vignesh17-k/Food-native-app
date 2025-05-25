@@ -26,6 +26,8 @@ import { setLogin } from "../../../store/slices/LoginSlice";
 import { set_section_data } from "../../../store/slices/HomeSlice";
 import mock_data from "../../../constants/dummyData";
 import { store } from "../../../store/store";
+import wishlist from "../../../utils/api/wishlist";
+import { set_wishlist } from "../../../store/slices/WishlistSlice";
 
 const Home = ({ navigation }) => {
   const section_data = useSelector((state: any) => state?.home?.section_data);
@@ -163,19 +165,29 @@ const Home = ({ navigation }) => {
       case "delivery":
         return handle_render_deliver_section();
       case "category":
-        return <CategoryRail  />;
+        return <CategoryRail />;
       case "popular":
-        return <PopularRails  />;
+        return <PopularRails />;
       case "recommended":
         return <RecommendedRails />;
       case "menu":
-        return <MenuRails  />;
+        return <MenuRails />;
       default:
         return null;
     }
   };
 
+  const handle_get_wishlist = async () => {
+    try {
+      const response = await wishlist.get_wishlist_data();
+      dispatch(set_wishlist(response?.data?.products));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
+    handle_get_wishlist();
     dispatch(set_section_data(constants.sections));
   }, []);
 

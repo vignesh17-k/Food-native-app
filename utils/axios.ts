@@ -21,6 +21,8 @@ axiosInstance.interceptors.request.use(
       config.headers['x-client-id'] = 'WEB';
       config.headers['x-client-version'] = '0.0.1';
       config.headers['x-client-env'] = 'DEV';
+    } else {
+      console.warn("No access token found, request may fail!");
     }
     return config;
   },
@@ -34,9 +36,9 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      console.error('API Error:', error.response.data.message);
+      console.error('API Error:', error);
     } else {
-      console.error('Network Error:', error.message);
+      console.error('Network Error:', error);
     }
     return Promise.reject(error);
   }
