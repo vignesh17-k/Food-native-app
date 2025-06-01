@@ -1,4 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axiosInstance from "./axios";
+
+interface Props {
+    url: string,
+    method: string,
+    data?: any,
+    params?: any
+}
 
 const utils = {
     store_data: async (key: string, value: any) => {
@@ -20,7 +28,23 @@ const utils = {
         } catch (error) {
             console.error("Error retrieving data:", error);
         }
+    },
+
+    api_request: async ({ url, method, data, params }: Props) => {
+        try {
+            const response = await axiosInstance({
+                method,
+                url,
+                data,
+                params,
+            });
+            return response.data;
+        } catch (error) {
+            console.error('API Error:', error.response?.data || error.message);
+            throw error.response?.data || error.message;
+        }
     }
+
 }
 
 export default utils;

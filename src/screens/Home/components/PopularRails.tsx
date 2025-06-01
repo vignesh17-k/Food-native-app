@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -10,25 +10,88 @@ import {
 import ImageLinks from "../../../../assets/ImageLink";
 import { SIZES } from "../../../../constants";
 import { FontAwesome } from "@expo/vector-icons";
-import { useDispatch } from "react-redux";
-import { update_section_data } from "../../../../store/slices/HomeSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { debounce, find, map } from "lodash";
+import product from "../../../../utils/api/product";
+import { Skeleton } from "native-base";
+import { update_wishlist } from "../../../../store/slices/WishlistSlice";
+import {
+  add_to_wishlist_action,
+  remove_from_wishlist_action,
+} from "../../../../actions/wishlist";
 
-const PopularRails = ({ rail_data }: any) => {
+const PopularRails = () => {
   const dispatch = useDispatch();
+  const wishlist_data = useSelector(
+    (state: any) => state.wishlist.wishlist_data
+  );
+  const [popular_data, set_popular_data] = useState([]);
+  const [loading, set_loading] = useState(true);
+  const arr = Array.from({ length: 3 }, (v, i) => i);
 
-  const _rail_data = rail_data?.slice(0, 10);
+  const debounced_ref = useRef(
+    debounce((product_id: string, exists: any, dispatch: any, data: any) => {
+      if (exists) {
+        dispatch(remove_from_wishlist_action(product_id, data));
+      } else {
+        dispatch(add_to_wishlist_action(product_id));
+      }
+    }, 2000)
+  );
 
-
-  const handle_favorite = (id: any, value: boolean) => {
-    const data = _rail_data?.map((item:any) =>
-      item?.id === id ? { ...item, isFavorite: value } : { ...item }
+  const handle_favorite = (data: any) => {
+    const product_id_exist = find(
+      wishlist_data,
+      (item: any) => item?.id === data?.id
     );
-    dispatch(
-      update_section_data({ section_name: "popular", section_data: data })
-    );
+    dispatch(update_wishlist(data));
+    debounced_ref.current(data?.id, product_id_exist, dispatch, data);
   };
 
+  const handle_get_popular_rail = async () => {
+    set_loading(true);
+    try {
+      const response = await product.get_popular_rails();
+      set_popular_data(response?.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      set_loading(false);
+    }
+  };
+
+  useEffect(() => {
+    handle_get_popular_rail();
+  }, []);
+
+  if (loading) {
+    return (
+      <View>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 20,
+          }}
+        >
+          <Skeleton height={4} width={180} borderRadius={10} />
+          <Skeleton height={4} width={10} borderRadius={10} />
+        </View>
+        <View style={{ flexDirection: "row", gap: 20 }}>
+          {map(arr, (item) => (
+            <Skeleton key={item} height={300} width={180} borderRadius={10} />
+          ))}
+        </View>
+      </View>
+    );
+  }
+
   const render_cards = (item: any) => {
+    const is_favorite = find(
+      wishlist_data,
+      (wishlist: any) => wishlist?.id === item?.id
+    );
+
     return (
       <TouchableOpacity style={styles.card_container}>
         <View
@@ -48,19 +111,18 @@ const PopularRails = ({ rail_data }: any) => {
             <Text style={styles.calories}>{item?.calories} Calories</Text>
           </View>
 
-          <TouchableOpacity
-            onPress={() => handle_favorite(item?.id, !item?.isFavorite)}
-          >
+          <TouchableOpacity onPress={() => handle_favorite(item)}>
             <FontAwesome
-              name={item?.isFavorite ? "heart" : "heart-o"}
+              name={is_favorite ? "heart" : "heart-o"}
               size={20}
-              color={item?.isFavorite ? "#ff6e4d" : "grey"}
+              color={is_favorite ? "#ff6e4d" : "grey"}
             />
           </TouchableOpacity>
         </View>
 
         <Image
-          source={item?.image}
+          src={item?.image}
+          alt="img"
           style={item?.style ? item?.style : styles.card_image}
         />
 
@@ -94,7 +156,7 @@ const PopularRails = ({ rail_data }: any) => {
         </Text>
       </View>
       <FlatList
-        data={_rail_data}
+        data={popular_data}
         horizontal
         keyExtractor={(item: any) => item?.id}
         renderItem={({ item }) => render_cards(item)}

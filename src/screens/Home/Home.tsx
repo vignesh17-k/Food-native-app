@@ -26,6 +26,8 @@ import { setLogin } from "../../../store/slices/LoginSlice";
 import { set_section_data } from "../../../store/slices/HomeSlice";
 import mock_data from "../../../constants/dummyData";
 import { store } from "../../../store/store";
+import wishlist from "../../../utils/api/wishlist";
+import { set_wishlist } from "../../../store/slices/WishlistSlice";
 
 const Home = ({ navigation }) => {
   const section_data = useSelector((state: any) => state?.home?.section_data);
@@ -33,7 +35,7 @@ const Home = ({ navigation }) => {
   const dispatch = useDispatch();
   const toast = useToast();
 
-  const scrollY = useRef(new Animated.Value(0)).current;
+  const scrollY = useRef(new Animated.Value(0))?.current;
   const translateHeader = scrollY.interpolate({
     inputRange: [0, 80],
     outputRange: [0, -80],
@@ -46,7 +48,7 @@ const Home = ({ navigation }) => {
   });
   const translateTitle = scrollY.interpolate({
     inputRange: [0, 80],
-    outputRange: [0, 40],
+    outputRange: [0, 30],
     extrapolate: "clamp",
   });
 
@@ -163,22 +165,31 @@ const Home = ({ navigation }) => {
       case "delivery":
         return handle_render_deliver_section();
       case "category":
-        return <CategoryRail rail_data={item?.data} />;
+        return <CategoryRail />;
       case "popular":
-        return <PopularRails rail_data={item?.data} />;
+        return <PopularRails />;
       case "recommended":
         return <RecommendedRails />;
       case "menu":
-        return <MenuRails rail_data={item?.data} />;
+        return <MenuRails />;
       default:
         return null;
     }
   };
 
+  const handle_get_wishlist = async () => {
+    try {
+      const response = await wishlist.get_wishlist_data();
+      dispatch(set_wishlist(response?.data?.products));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
+    handle_get_wishlist();
     dispatch(set_section_data(constants.sections));
   }, []);
-
 
   return (
     <View style={{ backgroundColor: "#fff" }}>

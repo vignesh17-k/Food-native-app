@@ -15,7 +15,7 @@ const MainApp = () => {
   const [loading, set_loading] = useState(false);
 
   const handle_session_change = (event, session) => {
-    dispatch(setSession(session));
+    dispatch(setSession({ session: session }));
     dispatch(setLogin(session ? true : false));
   };
 
@@ -27,7 +27,7 @@ const MainApp = () => {
         toast.show({
           title: error?.message,
           placement: "top",
-          background:'red.800'
+          background: "red.800",
         });
       }
       dispatch(setSession(session));
@@ -40,9 +40,11 @@ const MainApp = () => {
 
   useEffect(() => {
     fetch_session();
-    const subscription:any = supabase.auth.onAuthStateChange(handle_session_change);
+    const subscription: any = supabase.auth.onAuthStateChange(
+      handle_session_change
+    );
     return () => {
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, []);
 

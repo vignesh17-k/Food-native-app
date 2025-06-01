@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -10,12 +10,21 @@ import {
 import ImageLinks from "../../../../assets/ImageLink";
 import { SIZES } from "../../../../constants";
 import { FontAwesome } from "@expo/vector-icons";
-import { useDispatch } from "react-redux";
-import { head } from "lodash";
-import { update_section_data } from "../../../../store/slices/HomeSlice";
+import { useDispatch, useSelector } from "react-redux";
+import product from "../../../../utils/api/product";
+import { debounce, find, map } from "lodash";
+import { Skeleton } from "native-base";
+import { update_wishlist } from "../../../../store/slices/WishlistSlice";
+import { add_to_wishlist_action, remove_from_wishlist_action } from "../../../../actions/wishlist";
 
-const MenuRails = ({ rail_data }: any) => {
-  const [selected_menu, set_selected_menu] = useState<any>(head(rail_data));
+const MenuRails = () => {
+  const [selected_menu, set_selected_menu] = useState<any>("");
+  const [menu_data, set_menu_data] = useState([]);
+  const [loading, set_loading] = useState(true);
+  const wishlist_data = useSelector(
+    (state: any) => state?.wishlist?.wishlist_data
+  );
+  const arr = Array.from({ length: 6 }, (v, i) => i);
   const dispatch = useDispatch();
 
   const render_menu_tabs = ({ item }) => {
@@ -34,20 +43,70 @@ const MenuRails = ({ rail_data }: any) => {
     );
   };
 
-  const handle_favorite = (id: any, value: boolean) => {
-    const data: any = selected_menu?.list?.map((item: any) =>
-      item?.id === id ? { ...item, isFavorite: value } : { ...item }
-    );
+  const debounced_ref = useRef(
+    debounce((product_id: string, exists: any, dispatch: any, data: any) => {
+      if (exists) {
+        dispatch(remove_from_wishlist_action(product_id, data));
+      } else {
+        dispatch(add_to_wishlist_action(product_id));
+      }
+    }, 2000)
+  );
 
-    const update_rails_data = rail_data?.map((item:any) =>
-      item?.id === selected_menu?.id ? { ...item, list: data } : { ...item }
+  const handle_favorite = (data: any) => {
+    const product_id_exist = find(
+      wishlist_data,
+      (item: any) => item?.id === data?.id
     );
-
-    dispatch(update_section_data({ section_name: "menu", section_data: update_rails_data }));
-    set_selected_menu((prev: any) => ({ ...prev, list: data }));
+    dispatch(update_wishlist(data));
+    debounced_ref.current(data?.id, product_id_exist, dispatch, data);
   };
 
+  const handle_get_menu_rail = async () => {
+    set_loading(true);
+    try {
+      const response = await product.get_menu_rails();
+      set_selected_menu(response?.data[0]);
+      set_menu_data(response?.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      set_loading(false);
+    }
+  };
+
+  useEffect(() => {
+    handle_get_menu_rail();
+  }, []);
+
+  if (loading) {
+    return (
+      <View>
+        <View style={{ flexDirection: "row", gap: 20, marginBottom: 20 }}>
+          {map(arr, (item) => (
+            <Skeleton key={item} height={4} width={20} borderRadius={10} />
+          ))}
+        </View>
+        <View style={{ gap: 20 }}>
+          {map(arr, (item) => (
+            <Skeleton
+              key={item}
+              height={300}
+              width={"100%"}
+              borderRadius={10}
+            />
+          ))}
+        </View>
+      </View>
+    );
+  }
+
   const render_cards = ({ item }) => {
+    const is_favorite = find(
+      wishlist_data,
+      (wishlist: any) => wishlist?.id === item?.id
+    );
+
     return (
       <TouchableOpacity style={styles.card_container}>
         <View
@@ -67,19 +126,18 @@ const MenuRails = ({ rail_data }: any) => {
             <Text style={styles.calories}>{item?.calories} Calories</Text>
           </View>
 
-          <TouchableOpacity
-            onPress={() => handle_favorite(item?.id, !item?.isFavorite)}
-          >
+          <TouchableOpacity onPress={() => handle_favorite(item)}>
             <FontAwesome
-              name={item?.isFavorite ? "heart" : "heart-o"}
+              name={is_favorite ? "heart" : "heart-o"}
               size={20}
-              color={item?.isFavorite ? "#ff6e4d" : "grey"}
+              color={is_favorite ? "#ff6e4d" : "grey"}
             />
           </TouchableOpacity>
         </View>
 
         <Image
-          source={item?.image}
+          src={item?.image}
+          alt="img"
           style={item?.style ? item?.style : styles.card_image}
         />
 
@@ -96,7 +154,7 @@ const MenuRails = ({ rail_data }: any) => {
     <View style={styles.container}>
       <FlatList
         horizontal
-        data={rail_data}
+        data={menu_data}
         renderItem={render_menu_tabs}
         keyExtractor={(item) => item?.id?.toString()}
         contentContainerStyle={styles.menu_list}
