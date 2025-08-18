@@ -18,6 +18,7 @@ import calories from './icons/calories.png';
 import _delete from './icons/delete.png';
 import cross from './icons/cross.png';
 import cart from './icons/cart.png';
+import empty_wishlist from './images/empty_wishlist.png';
 
 const ImageLinks = {
     google_icon,
@@ -39,7 +40,8 @@ const ImageLinks = {
     calories,
     cross,
     cart,
-    _delete
+    _delete,
+    empty_wishlist
 };
 
 export default ImageLinks;

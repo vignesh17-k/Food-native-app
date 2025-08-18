@@ -83,9 +83,7 @@ const Wishlist = ({ navigation }) => {
   };
 
   const render_item = ({ item }) => {
-    const translateX =  new Animated.Value(0);
-
-    
+    const translateX = new Animated.Value(0);
     const pan_responder = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
@@ -170,13 +168,52 @@ const Wishlist = ({ navigation }) => {
         right_section={<CartIcon />}
       />
 
-      <FlatList
-        data={wishlist_data}
-        renderItem={render_item}
-        keyExtractor={(item) => `${item?.id?.toString()}${item?.name}`}
-        contentContainerStyle={styles.wishlist_container}
-        showsVerticalScrollIndicator={false}
-      />
+      {wishlist_data?.length === 0 ? (
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
+          <Image
+            source={ImageLinks?.empty_wishlist}
+            style={{
+              width: SIZES.width * 0.5,
+              height: SIZES.height * 0.2,
+              resizeMode: "contain",
+              marginBottom: 20,
+            }}
+          />
+          <View
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              marginHorizontal: SIZES.width * 0.02,
+            }}
+          >
+            <Text style={{ fontSize: 20, fontWeight: "700" }}>
+              Your Wishlist is Empty
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "400",
+                color: "grey",
+                textAlign: "center",
+                lineHeight: 24,
+              }}
+            >
+              Tap on the heart button to start saving your favorite items.
+            </Text>
+          </View>
+        </View>
+      ) : (
+        <FlatList
+          data={wishlist_data}
+          renderItem={render_item}
+          keyExtractor={(item) => `${item?.id?.toString()}${item?.name}`}
+          contentContainerStyle={styles.wishlist_container}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </SafeAreaView>
   );
 };
