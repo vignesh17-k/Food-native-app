@@ -18,6 +18,7 @@ import CartIcon from "../../components/CartIcon";
 import Button from "../../components/Button";
 import { remove_from_wishlist_action } from "../../../actions/wishlist";
 import { update_wishlist } from "../../../store/slices/WishlistSlice";
+import constants from "../../../utils/constants";
 
 const Wishlist = ({ navigation }) => {
   const wishlist_data = useSelector(
@@ -33,40 +34,48 @@ const Wishlist = ({ navigation }) => {
   const handle_render_item = (item: any) => {
     return (
       <React.Fragment>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 8,
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate(constants.route_names.ProductDetails, {
+              id: item?.id,
+            });
           }}
         >
-          <Image
-            src={item?.image}
-            style={{
-              resizeMode: "contain",
-              marginTop: 10,
-              height: SIZES.height * 0.1,
-              width: SIZES.width * 0.2,
-            }}
-            alt="img"
-          />
-
           <View
             style={{
-              justifyContent: "center",
-              gap: 5,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
             }}
           >
-            <Text
-              style={styles.wishlist_name}
-              numberOfLines={2}
-              ellipsizeMode="tail"
+            <Image
+              src={item?.image}
+              style={{
+                resizeMode: "contain",
+                marginTop: 10,
+                height: SIZES.height * 0.1,
+                width: SIZES.width * 0.2,
+              }}
+              alt="img"
+            />
+
+            <View
+              style={{
+                justifyContent: "center",
+                gap: 5,
+              }}
             >
-              {item?.name}
-            </Text>
-            <Text style={styles.wishlist_price}>${item?.price}</Text>
+              <Text
+                style={styles.wishlist_name}
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
+                {item?.name}
+              </Text>
+              <Text style={styles.wishlist_price}>${item?.price}</Text>
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
         <Button
           // loading={loading}

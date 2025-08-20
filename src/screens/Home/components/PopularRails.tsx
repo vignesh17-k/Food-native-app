@@ -19,6 +19,8 @@ import {
   add_to_wishlist_action,
   remove_from_wishlist_action,
 } from "../../../../actions/wishlist";
+import { useNavigation } from "@react-navigation/native";
+import constants from "../../../../utils/constants";
 
 const PopularRails = () => {
   const dispatch = useDispatch();
@@ -28,6 +30,7 @@ const PopularRails = () => {
   const [popular_data, set_popular_data] = useState([]);
   const [loading, set_loading] = useState(true);
   const arr = Array.from({ length: 3 }, (v, i) => i);
+  const navigate: any = useNavigation();
 
   const debounced_ref = useRef(
     debounce((product_id: string, exists: any, dispatch: any, data: any) => {
@@ -93,7 +96,14 @@ const PopularRails = () => {
     );
 
     return (
-      <TouchableOpacity style={styles.card_container}>
+      <TouchableOpacity
+        style={styles.card_container}
+        onPress={() =>
+          navigate.navigate(constants.route_names.ProductDetails, {
+            id: item?.id,
+          })
+        }
+      >
         <View
           style={{
             flexDirection: "row",

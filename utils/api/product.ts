@@ -24,6 +24,14 @@ const product = {
 	},
 
 
+	get_product_details: (product_id: string) => {
+		return utils.api_request({
+			url: `api/products/detail/${product_id}`,
+			method: 'GET'
+		});
+	},
+
+
 };
 
 
