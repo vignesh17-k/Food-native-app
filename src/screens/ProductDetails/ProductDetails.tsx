@@ -17,6 +17,7 @@ import {
 } from "../../../actions/wishlist";
 import { update_wishlist } from "../../../store/slices/WishlistSlice";
 import { useDispatch, useSelector } from "react-redux";
+import Counter from "../../components/Counter";
 
 const ProductDetails = ({ route, navigation }) => {
   const { id } = route.params;
@@ -293,6 +294,21 @@ const ProductDetails = ({ route, navigation }) => {
     );
   };
 
+  const handle_cart_btn = () => {
+    return (
+      <TouchableOpacity style={{ flex: 1 }}>
+        <View style={styles.cart_btn}>
+          <Text style={{ color: "white", fontWeight: "700", fontSize: 16 }}>
+            Buy Now
+          </Text>
+          <Text style={{ color: "white", fontWeight: "700", fontSize: 16 }}>
+            ${product_details?.price}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <SafeAreaView
       style={{
@@ -339,7 +355,8 @@ const ProductDetails = ({ route, navigation }) => {
           </View>
 
           <View style={styles.footer_section}>
-            <Button type="primary" text="Add to Cart" />
+            <Counter />
+            {handle_cart_btn()}
           </View>
         </View>
       )}
@@ -398,6 +415,8 @@ const styles = StyleSheet.create({
     right: 0,
     paddingTop: 20,
     paddingHorizontal: 20,
+    flexDirection: "row",
+    gap: 20,
   },
 
   calories: {
@@ -428,5 +447,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 15,
     paddingHorizontal: 20,
+  },
+
+  cart_btn: {
+    backgroundColor: "#ed7550",
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 20,
+    width: "100%",
   },
 });
