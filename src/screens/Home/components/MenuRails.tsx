@@ -15,7 +15,12 @@ import product from "../../../../utils/api/product";
 import { debounce, find, map } from "lodash";
 import { Skeleton } from "native-base";
 import { update_wishlist } from "../../../../store/slices/WishlistSlice";
-import { add_to_wishlist_action, remove_from_wishlist_action } from "../../../../actions/wishlist";
+import {
+  add_to_wishlist_action,
+  remove_from_wishlist_action,
+} from "../../../../actions/wishlist";
+import constants from "../../../../utils/constants";
+import { useNavigation } from "@react-navigation/native";
 
 const MenuRails = () => {
   const [selected_menu, set_selected_menu] = useState<any>("");
@@ -26,6 +31,7 @@ const MenuRails = () => {
   );
   const arr = Array.from({ length: 6 }, (v, i) => i);
   const dispatch = useDispatch();
+  const navigate: any = useNavigation();
 
   const render_menu_tabs = ({ item }) => {
     return (
@@ -108,7 +114,14 @@ const MenuRails = () => {
     );
 
     return (
-      <TouchableOpacity style={styles.card_container}>
+      <TouchableOpacity
+        style={styles.card_container}
+        onPress={() =>
+          navigate.navigate(constants.route_names.ProductDetails, {
+            id: item?.id,
+          })
+        }
+      >
         <View
           style={{
             flexDirection: "row",

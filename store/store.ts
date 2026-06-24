@@ -2,6 +2,7 @@ import LoginReducer from "./slices/LoginSlice";
 import UserReducer from "./slices/User";
 import HomeReducer from "./slices/HomeSlice";
 import WishlistReducer from "./slices/WishlistSlice";
+import SearchReducer from "./slices/SearchSlice";
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import { persistStore, persistReducer } from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -12,7 +13,8 @@ const main_reducer = combineReducers({
   login: LoginReducer,
   user: UserReducer,
   home: HomeReducer,
-  wishlist: WishlistReducer
+  wishlist: WishlistReducer,
+  search: SearchReducer,
 })
 
 const root_reducer = (state: any, action: any) => {
@@ -27,7 +29,10 @@ const root_reducer = (state: any, action: any) => {
       },
       wishlist: {
         wishlist_data: []
-      }
+      },
+      search: {
+        product_filters: null,
+      },
     }, action)
   } else {
     return main_reducer(state, action);

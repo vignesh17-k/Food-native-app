@@ -14,9 +14,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { SIZES } from "../../constants";
 import Home from "../screens/Home/Home";
 import Search from "../screens/Search/Search";
-import Cart from "../screens/Cart/Cart"
-import Notifications from "../screens/Notifications/Notification"
-import Wishlist from "../screens/Wishlist/Wishlist"
+import Cart from "../screens/Cart/Cart";
+import Notifications from "../screens/Notifications/Notification";
+import Wishlist from "../screens/Wishlist/Wishlist";
 import { useNavigation, useNavigationState } from "@react-navigation/native";
 
 const Tab = createBottomTabNavigator();
@@ -109,16 +109,16 @@ const TabBar = () => {
   return (
     <Tab.Navigator
       screenOptions={{
-        headerShown: false
+        headerShown: false,
       }}
       initialRouteName={constants.route_names.Home}
       tabBar={() => <TabView />}
     >
-      <Tab.Screen name="home" component={Home} />
-      <Tab.Screen name="search" component={Search} />
-      <Tab.Screen name="cart" component={Cart} />
-      <Tab.Screen name="wishlist" component={Wishlist} />
-      <Tab.Screen name="notifications" component={Notifications} />
+      <Tab.Screen name={constants.route_names.Home} component={Home} />
+      <Tab.Screen name={constants.route_names.Search} component={Search} />
+      <Tab.Screen name={constants.route_names.Cart} component={Cart} />
+      <Tab.Screen name={constants.route_names.Wishlist} component={Wishlist} />
+      <Tab.Screen name={constants.route_names.Notifications} component={Notifications} />
     </Tab.Navigator>
   );
 };

@@ -9,6 +9,7 @@ import back_arrow from './icons/back_arrow.png';
 import down_arrow from './icons/down_arrow.png';
 import settings from './icons/setting.png';
 import search from './icons/search.png';
+import filter from './icons/filter.png';
 import profile from './images/profile.png';
 import burger from './icons/burger.png';
 import cherry from './icons/cherry.png';
@@ -18,6 +19,7 @@ import calories from './icons/calories.png';
 import _delete from './icons/delete.png';
 import cross from './icons/cross.png';
 import cart from './icons/cart.png';
+import empty_wishlist from './images/empty_wishlist.png';
 
 const ImageLinks = {
     google_icon,
@@ -31,6 +33,7 @@ const ImageLinks = {
     down_arrow,
     settings,
     search,
+    filter,
     profile,
     burger,
     cherry,
@@ -39,7 +42,8 @@ const ImageLinks = {
     calories,
     cross,
     cart,
-    _delete
+    _delete,
+    empty_wishlist
 };
 
 export default ImageLinks;

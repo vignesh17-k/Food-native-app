@@ -18,6 +18,7 @@ import CartIcon from "../../components/CartIcon";
 import Button from "../../components/Button";
 import { remove_from_wishlist_action } from "../../../actions/wishlist";
 import { update_wishlist } from "../../../store/slices/WishlistSlice";
+import constants from "../../../utils/constants";
 
 const Wishlist = ({ navigation }) => {
   const wishlist_data = useSelector(
@@ -33,40 +34,48 @@ const Wishlist = ({ navigation }) => {
   const handle_render_item = (item: any) => {
     return (
       <React.Fragment>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 8,
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate(constants.route_names.ProductDetails, {
+              id: item?.id,
+            });
           }}
         >
-          <Image
-            src={item?.image}
-            style={{
-              resizeMode: "contain",
-              marginTop: 10,
-              height: SIZES.height * 0.1,
-              width: SIZES.width * 0.2,
-            }}
-            alt="img"
-          />
-
           <View
             style={{
-              justifyContent: "center",
-              gap: 5,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
             }}
           >
-            <Text
-              style={styles.wishlist_name}
-              numberOfLines={2}
-              ellipsizeMode="tail"
+            <Image
+              src={item?.image}
+              style={{
+                resizeMode: "contain",
+                marginTop: 10,
+                height: SIZES.height * 0.1,
+                width: SIZES.width * 0.2,
+              }}
+              alt="img"
+            />
+
+            <View
+              style={{
+                justifyContent: "center",
+                gap: 5,
+              }}
             >
-              {item?.name}
-            </Text>
-            <Text style={styles.wishlist_price}>${item?.price}</Text>
+              <Text
+                style={styles.wishlist_name}
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
+                {item?.name}
+              </Text>
+              <Text style={styles.wishlist_price}>${item?.price}</Text>
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
         <Button
           // loading={loading}
@@ -83,9 +92,7 @@ const Wishlist = ({ navigation }) => {
   };
 
   const render_item = ({ item }) => {
-    const translateX =  new Animated.Value(0);
-
-    
+    const translateX = new Animated.Value(0);
     const pan_responder = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
@@ -170,13 +177,52 @@ const Wishlist = ({ navigation }) => {
         right_section={<CartIcon />}
       />
 
-      <FlatList
-        data={wishlist_data}
-        renderItem={render_item}
-        keyExtractor={(item) => `${item?.id?.toString()}${item?.name}`}
-        contentContainerStyle={styles.wishlist_container}
-        showsVerticalScrollIndicator={false}
-      />
+      {wishlist_data?.length === 0 ? (
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
+          <Image
+            source={ImageLinks?.empty_wishlist}
+            style={{
+              width: SIZES.width * 0.5,
+              height: SIZES.height * 0.2,
+              resizeMode: "contain",
+              marginBottom: 20,
+            }}
+          />
+          <View
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              marginHorizontal: SIZES.width * 0.02,
+            }}
+          >
+            <Text style={{ fontSize: 20, fontWeight: "700" }}>
+              Your Wishlist is Empty
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "400",
+                color: "grey",
+                textAlign: "center",
+                lineHeight: 24,
+              }}
+            >
+              Tap on the heart button to start saving your favorite items.
+            </Text>
+          </View>
+        </View>
+      ) : (
+        <FlatList
+          data={wishlist_data}
+          renderItem={render_item}
+          keyExtractor={(item) => `${item?.id?.toString()}${item?.name}`}
+          contentContainerStyle={styles.wishlist_container}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </SafeAreaView>
   );
 };

@@ -14,7 +14,8 @@ const constants = {
         Search: "search",
         Cart: "cart",
         Wishlist: "wishlist",
-        Notifications: "notifications"
+        Notifications: "notifications",
+        ProductDetails: "productdetails"
     },
     bottom_tabs: [
         {
@@ -90,14 +91,17 @@ const constants = {
         {
             id: 1,
             label: "10 Mins",
+            minutes: 10,
         },
         {
             id: 2,
-            label: "20 Mins"
+            label: "20 Mins",
+            minutes: 20,
         },
         {
             id: 3,
-            label: "30 Mins"
+            label: "30 Mins",
+            minutes: 30,
         }
     ],
     ratings: [
@@ -125,35 +129,43 @@ const constants = {
     tags: [
         {
             id: 1,
-            label: "Burger"
+            label: "Burger",
+            slug: "burger",
         },
         {
             id: 2,
-            label: "Fast Food"
+            label: "Fast Food",
+            slug: "fast-food",
         },
         {
             id: 3,
-            label: "Pizza"
+            label: "Pizza",
+            slug: "pizza",
         },
         {
             id: 4,
-            label: "Asian"
+            label: "Asian",
+            slug: "asian",
         },
         {
             id: 5,
-            label: "Dessert"
+            label: "Dessert",
+            slug: "dessert",
         },
         {
             id: 6,
-            label: "Breakfast"
+            label: "Breakfast",
+            slug: "breakfast",
         },
         {
             id: 7,
-            label: "Vegetable"
+            label: "Vegetable",
+            slug: "veg",
         },
         {
             id: 8,
-            label: "Taccos"
+            label: "Taccos",
+            slug: "tacos",
         }
     ]
 }

@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import Otp from "./screens/OtpScreen/Otp";
 import TabBar from "./components/Tabs";
 import constants from "../utils/constants";
+import ProductDetails from "./screens/ProductDetails/ProductDetails";
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +24,7 @@ const Routes = () => {
       }
       screenOptions={{
         headerShown: false,
+        animation: "slide_from_right",
       }}
     >
       <Stack.Screen name={route_names?.PreLogin} component={OnBoarding} />
@@ -38,9 +40,12 @@ const Routes = () => {
       <Stack.Screen name={route_names?.PhoneLogin} component={PhoneLogin} />
       <Stack.Screen name={route_names?.OtpLogin} component={Otp} />
       <Stack.Screen name={route_names?.MainApp} component={TabBar} />
+      <Stack.Screen
+        name={constants.route_names.ProductDetails}
+        component={ProductDetails}
+      />
     </Stack.Navigator>
   );
 };
-
 
 export default Routes;

@@ -1,0 +1,475 @@
+import React, { useEffect, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  Modal,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  PanResponder,
+  LayoutChangeEvent,
+} from "react-native";
+import { COLORS, SIZES } from "../../../../constants";
+import ImageLinks from "../../../../assets/ImageLink";
+import constants from "../../../../utils/constants";
+import Button from "../../../components/Button";
+
+const THUMB_SIZE = 30;
+const PRIMARY = "#ed7550";
+
+export type FilterValues = {
+  distanceMin: number;
+  distanceMax: number;
+  deliveryTime: number | null;
+  priceMin: number;
+  priceMax: number;
+  rating: number | null;
+  tags: number[];
+};
+
+export const DEFAULT_FILTER_VALUES: FilterValues = {
+  distanceMin: 0,
+  distanceMax: 20,
+  deliveryTime: null,
+  priceMin: 0,
+  priceMax: 100,
+  rating: null,
+  tags: [],
+};
+
+type RangeSliderProps = {
+  min: number;
+  max: number;
+  low: number;
+  high: number;
+  onChange: (low: number, high: number) => void;
+  formatLabel: (value: number) => string;
+};
+
+const RangeSlider = ({
+  min,
+  max,
+  low,
+  high,
+  onChange,
+  formatLabel,
+}: RangeSliderProps) => {
+  const [trackWidth, setTrackWidth] = useState(0);
+  const trackWidthRef = useRef(0);
+  const startPos = useRef(0);
+  const lowRef = useRef(low);
+  const highRef = useRef(high);
+  const onChangeRef = useRef(onChange);
+  const minRef = useRef(min);
+  const maxRef = useRef(max);
+
+  lowRef.current = low;
+  highRef.current = high;
+  onChangeRef.current = onChange;
+  minRef.current = min;
+  maxRef.current = max;
+
+  const clampValue = (value: number) =>
+    Math.min(maxRef.current, Math.max(minRef.current, Math.round(value)));
+
+  const valueToPosition = (value: number, width: number) => {
+    if (width <= THUMB_SIZE) return 0;
+    return (
+      ((value - minRef.current) / (maxRef.current - minRef.current)) *
+      (width - THUMB_SIZE)
+    );
+  };
+
+  const positionToValue = (position: number, width: number) => {
+    if (width <= THUMB_SIZE) return minRef.current;
+    const ratio = position / (width - THUMB_SIZE);
+    return clampValue(
+      minRef.current + ratio * (maxRef.current - minRef.current)
+    );
+  };
+
+  const createPanResponder = (isLow: boolean) =>
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderGrant: () => {
+        const width = trackWidthRef.current;
+        startPos.current = valueToPosition(
+          isLow ? lowRef.current : highRef.current,
+          width
+        );
+      },
+      onPanResponderMove: (_, gesture) => {
+        const width = trackWidthRef.current;
+        if (width <= THUMB_SIZE) return;
+
+        const nextPos = Math.min(
+          width - THUMB_SIZE,
+          Math.max(0, startPos.current + gesture.dx)
+        );
+        const nextValue = positionToValue(nextPos, width);
+
+        if (isLow) {
+          onChangeRef.current(
+            Math.min(nextValue, highRef.current),
+            highRef.current
+          );
+        } else {
+          onChangeRef.current(
+            lowRef.current,
+            Math.max(nextValue, lowRef.current)
+          );
+        }
+      },
+    });
+
+  const lowPan = useRef(createPanResponder(true)).current;
+  const highPan = useRef(createPanResponder(false)).current;
+
+  const handleLayout = (event: LayoutChangeEvent) => {
+    const width = event.nativeEvent.layout.width;
+    trackWidthRef.current = width;
+    setTrackWidth(width);
+  };
+
+  const lowPosition = valueToPosition(low, trackWidth);
+  const highPosition = valueToPosition(high, trackWidth);
+
+  return (
+    <View style={styles.rangeSlider}>
+      <View style={styles.trackContainer} onLayout={handleLayout}>
+        <View style={styles.track} />
+        <View
+          style={[
+            styles.trackFilled,
+            {
+              left: lowPosition + THUMB_SIZE / 2,
+              width: Math.max(0, highPosition - lowPosition),
+            },
+          ]}
+        />
+        <View
+          style={[styles.thumb, { left: lowPosition }]}
+          {...lowPan.panHandlers}
+        />
+        <View
+          style={[styles.thumb, { left: highPosition }]}
+          {...highPan.panHandlers}
+        />
+      </View>
+      <View style={styles.rangeLabels}>
+        <Text style={styles.rangeLabel}>{formatLabel(low)}</Text>
+        <Text style={styles.rangeLabel}>{formatLabel(high)}</Text>
+      </View>
+    </View>
+  );
+};
+
+type FilterModalProps = {
+  visible: boolean;
+  onClose: () => void;
+  onApply: (filters: FilterValues) => void;
+  initialFilters?: FilterValues | null;
+};
+
+const FilterModal = ({
+  visible,
+  onClose,
+  onApply,
+  initialFilters,
+}: FilterModalProps) => {
+  const [filters, setFilters] = useState<FilterValues>(DEFAULT_FILTER_VALUES);
+
+  useEffect(() => {
+    if (visible) {
+      setFilters(initialFilters ?? DEFAULT_FILTER_VALUES);
+    }
+  }, [visible, initialFilters]);
+
+  const toggleTag = (tagId: number) => {
+    setFilters((prev) => ({
+      ...prev,
+      tags: prev.tags.includes(tagId)
+        ? prev.tags.filter((id) => id !== tagId)
+        : [...prev.tags, tagId],
+    }));
+  };
+
+  const handleApply = () => {
+    onApply(filters);
+    onClose();
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <View style={styles.overlay}>
+        <TouchableOpacity style={styles.backdrop} onPress={onClose} />
+        <View style={styles.sheet}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Filter Your Search</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Image source={ImageLinks.cross} style={styles.closeIcon} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.content}
+          >
+            <Text style={styles.sectionTitle}>Distance</Text>
+            <RangeSlider
+              min={0}
+              max={20}
+              low={filters.distanceMin}
+              high={filters.distanceMax}
+              onChange={(distanceMin, distanceMax) =>
+                setFilters((prev) => ({ ...prev, distanceMin, distanceMax }))
+              }
+              formatLabel={(value) => `${value} km`}
+            />
+
+            <Text style={styles.sectionTitle}>Delivery Time</Text>
+            <View style={styles.chipRow}>
+              {constants.delivery_time.map((item) => {
+                const selected = filters.deliveryTime === item.id;
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[styles.chip, selected && styles.chipSelected]}
+                    onPress={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        deliveryTime: selected ? null : item.id,
+                      }))
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        selected && styles.chipTextSelected,
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <Text style={styles.sectionTitle}>Pricing Range</Text>
+            <RangeSlider
+              min={0}
+              max={100}
+              low={filters.priceMin}
+              high={filters.priceMax}
+              onChange={(priceMin, priceMax) =>
+                setFilters((prev) => ({ ...prev, priceMin, priceMax }))
+              }
+              formatLabel={(value) => `$${value}`}
+            />
+
+            <Text style={styles.sectionTitle}>Ratings</Text>
+            <View style={styles.chipRow}>
+              {constants.ratings.map((item) => {
+                const selected = filters.rating === item.id;
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[styles.chip, selected && styles.chipSelected]}
+                    onPress={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        rating: selected ? null : item.id,
+                      }))
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        selected && styles.chipTextSelected,
+                      ]}
+                    >
+                      {item.label} ★
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <Text style={styles.sectionTitle}>Tags</Text>
+            <View style={styles.chipRow}>
+              {constants.tags.map((item) => {
+                const selected = filters.tags.includes(item.id);
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[styles.chip, selected && styles.chipSelected]}
+                    onPress={() => toggleTag(item.id)}
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        selected && styles.chipTextSelected,
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
+
+          <View style={styles.footer}>
+            <Button
+              text="Apply Filters"
+              type="primary"
+              width="100%"
+              onClick={handleApply}
+            />
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+export default FilterModal;
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  backdrop: {
+    flex: 1,
+  },
+  sheet: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: "88%",
+    paddingTop: 20,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.22,
+    shadowRadius: 20,
+    elevation: 20,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: SIZES.padding,
+    marginBottom: 8,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: COLORS.black,
+  },
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: COLORS.lightGray1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  closeIcon: {
+    width: 14,
+    height: 14,
+    tintColor: COLORS.black,
+  },
+  content: {
+    paddingHorizontal: SIZES.padding,
+    paddingBottom: 16,
+    gap: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.black,
+    marginTop: 8,
+  },
+  rangeSlider: {
+    marginBottom: 8,
+  },
+  trackContainer: {
+    height: THUMB_SIZE,
+    justifyContent: "center",
+  },
+  track: {
+    height: 10,
+    borderRadius: 2,
+    backgroundColor: COLORS.lightGray1,
+  },
+  trackFilled: {
+    position: "absolute",
+    height: 10,
+    borderRadius: 2,
+    backgroundColor: PRIMARY,
+  },
+  thumb: {
+    position: "absolute",
+    width: THUMB_SIZE,
+    height: THUMB_SIZE,
+    borderRadius: THUMB_SIZE / 2,
+    backgroundColor: PRIMARY,
+    borderWidth: 4,
+    borderColor: "white",
+    top: 0,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+  },
+  rangeLabels: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+  rangeLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.black,
+  },
+  chipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginBottom: 8,
+  },
+  chip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: COLORS.lightGray2,
+  },
+  chipSelected: {
+    backgroundColor: PRIMARY,
+  },
+  chipText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.darkGray,
+  },
+  chipTextSelected: {
+    color: COLORS.white,
+  },
+  footer: {
+    paddingHorizontal: SIZES.padding,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.lightGray2,
+  },
+});

@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  Pressable,
   Text,
   View,
   StyleSheet,
@@ -28,12 +27,18 @@ import mock_data from "../../../constants/dummyData";
 import { store } from "../../../store/store";
 import wishlist from "../../../utils/api/wishlist";
 import { set_wishlist } from "../../../store/slices/WishlistSlice";
+import FilterModal, { FilterValues } from "./components/FilterModal";
+import {
+  clear_product_filters,
+  set_product_filters,
+} from "../../../store/slices/SearchSlice";
 
 const Home = ({ navigation }) => {
   const section_data = useSelector((state: any) => state?.home?.section_data);
   const navigate: any = useNavigation();
   const dispatch = useDispatch();
   const toast = useToast();
+  const [filter_visible, set_filter_visible] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0))?.current;
   const translateHeader = scrollY.interpolate({
@@ -85,34 +90,23 @@ const Home = ({ navigation }) => {
         <Header
           title={<Text style={{ fontSize: 20, fontWeight: "700" }}>HOME</Text>}
           right_section={
-            <View
-              style={{
-                padding: 10,
-                borderColor: "grey",
-                borderWidth: 1,
-                borderRadius: 10,
-              }}
-            >
-              <Image
-                source={ImageLinks.settings}
-                alt="search"
-                style={{
-                  height: 25,
-                  width: 25,
-                  tintColor: "grey",
-                }}
-              />
-            </View>
-          }
-          left_section={
             <TouchableOpacity onPress={handle_logout}>
-              <Image
-                source={ImageLinks.profile}
-                alt="search"
-                style={{ height: 45, width: 45, borderRadius: 10 }}
-              />
-            </TouchableOpacity>
+            <Image
+              source={ImageLinks.profile}
+              alt="search"
+              style={{ height: 45, width: 45, borderRadius: 10 }}
+            />
+          </TouchableOpacity>
           }
+          // left_section={
+          //   <TouchableOpacity onPress={handle_logout}>
+          //     <Image
+          //       source={ImageLinks.profile}
+          //       alt="search"
+          //       style={{ height: 45, width: 45, borderRadius: 10 }}
+          //     />
+          //   </TouchableOpacity>
+          // }
           container_style={{
             marginVertical: 10,
           }}
@@ -121,24 +115,37 @@ const Home = ({ navigation }) => {
     );
   };
 
+  const handle_open_filter = () => {
+    set_filter_visible(true);
+  };
+
+  const handle_close_filter = () => {
+    set_filter_visible(false);
+  };
+
+  const handle_apply_filters = (filters: FilterValues) => {
+    dispatch(set_product_filters(filters));
+    set_filter_visible(false);
+    navigate.navigate(constants.route_names.Search);
+  };
+
   const handle_click = () => {
+    dispatch(clear_product_filters());
     navigate.navigate(constants.route_names.Search);
   };
 
   const handle_render_search = () => {
     return (
-      <TouchableOpacity onPress={handle_click}>
-        <View style={styles.search_container}>
+      <View style={styles.search_container}>
+        <TouchableOpacity style={styles.search_input_area} onPress={handle_click}>
           <Image
             source={ImageLinks.search}
             alt="search"
             style={{ height: 25, width: 25, tintColor: "black" }}
           />
-          <Pressable>
-            <Text style={styles.placeholder_text}>{"search food..."}</Text>
-          </Pressable>
-        </View>
-      </TouchableOpacity>
+          <Text style={styles.placeholder_text}>{"search food..."}</Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -213,6 +220,11 @@ const Home = ({ navigation }) => {
         )}
         scrollEventThrottle={1}
       />
+      <FilterModal
+        visible={filter_visible}
+        onClose={handle_close_filter}
+        onApply={handle_apply_filters}
+      />
     </View>
   );
 };
@@ -244,8 +256,19 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginTop: 10,
     flexDirection: "row",
-    gap: 12,
     alignItems: "center",
+    justifyContent: "space-between",
+  },
+  search_input_area: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  filter_icon: {
+    height: 22,
+    width: 22,
+    tintColor: "black",
   },
   placeholder_text: {
     color: "#bdbdc1",
