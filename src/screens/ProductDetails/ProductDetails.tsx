@@ -1,6 +1,17 @@
 import { Image, Skeleton, Text, View } from "native-base";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { SafeAreaView, StyleSheet, TouchableOpacity } from "react-native";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  SafeAreaView,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import Header from "../../components/Header";
 import { SIZES } from "../../../constants";
 import ImageLinks from "../../../assets/ImageLink";
@@ -18,6 +29,7 @@ import {
 import { update_wishlist } from "../../../store/slices/WishlistSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Counter from "../../components/Counter";
+import { LayoutChangeEvent } from "react-native";
 
 const ProductDetails = ({ route, navigation }) => {
   const { id } = route.params;
@@ -25,6 +37,13 @@ const ProductDetails = ({ route, navigation }) => {
   const [product_details, set_product_details] = useState<any>({});
   const [selected_size, set_selected_size] = useState<any>(null);
   const dispatch = useDispatch();
+
+  const [footer_height, set_footer_height] = useState(0);
+
+  const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout;
+    set_footer_height(height);
+  }, []);
 
   const wishlist_data = useSelector(
     (state: any) => state.wishlist.wishlist_data
@@ -196,6 +215,11 @@ const ProductDetails = ({ route, navigation }) => {
         <Text style={{ fontSize: 38, fontWeight: "800", lineHeight: 40 }}>
           {product_details?.name}
         </Text>
+
+        <Text style={{ fontSize: 28, fontWeight: "900", lineHeight: 40 }}>
+          ${product_details?.price}
+        </Text>
+
         <Text
           style={{
             fontSize: 18,
@@ -299,7 +323,7 @@ const ProductDetails = ({ route, navigation }) => {
       <TouchableOpacity style={{ flex: 1 }}>
         <View style={styles.cart_btn}>
           <Text style={{ color: "white", fontWeight: "700", fontSize: 16 }}>
-            Buy Now
+            Add to Cart
           </Text>
           <Text style={{ color: "white", fontWeight: "700", fontSize: 16 }}>
             ${product_details?.price}
@@ -341,24 +365,24 @@ const ProductDetails = ({ route, navigation }) => {
       {loading ? (
         handle_render_skeleton()
       ) : (
-        <View
-          style={{
-            flex: 1,
-            paddingHorizontal: 30,
-            paddingVertical: 10,
-            position: "relative",
-          }}
-        >
-          <View style={styles.details_section}>
+        <>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{
+              padding: 20,
+              paddingBottom: footer_height,
+            }}
+            showsVerticalScrollIndicator={false}
+          >
             {handle_render_product_image()}
             {handle_render_product_info()}
-          </View>
+          </ScrollView>
 
-          <View style={styles.footer_section}>
+          <View style={styles.footer_section} onLayout={handleFooterLayout}>
             <Counter />
             {handle_cart_btn()}
           </View>
-        </View>
+        </>
       )}
     </SafeAreaView>
   );
@@ -367,30 +391,6 @@ const ProductDetails = ({ route, navigation }) => {
 export default ProductDetails;
 
 const styles = StyleSheet.create({
-  tab_container: {
-    flexDirection: "row",
-    height: SIZES.height * 0.1,
-    paddingHorizontal: 20,
-    justifyContent: "space-evenly",
-    alignItems: "center",
-    gap: 15,
-    shadowColor: "rgba(0,0,0,0.5)",
-    shadowOffset: {
-      width: 0,
-      height: -15,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-    backgroundColor: "white",
-    borderTopRightRadius: 30,
-    borderTopLeftRadius: 30,
-  },
-
-  details_section: {
-    flex: 1,
-  },
-
   image_style: {
     width: "100%",
     height: 200,
@@ -407,14 +407,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
-
+    zIndex: 5,
     position: "absolute",
     backgroundColor: "white",
     bottom: 0,
     left: 0,
     right: 0,
-    paddingTop: 20,
-    paddingHorizontal: 20,
+    padding: SIZES.height * 0.03,
     flexDirection: "row",
     gap: 20,
   },

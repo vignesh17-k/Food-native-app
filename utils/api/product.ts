@@ -1,6 +1,14 @@
 import utils from "../utils";
+import { ProductSearchBody } from "./buildProductFilterParams";
 
 const product = {
+	get_products: (body: ProductSearchBody = {}) => {
+		return utils.api_request({
+			url: "api/products",
+			method: "POST",
+			data: body,
+		});
+	},
 	get_categories: () => {
 		return utils.api_request({
 			url: 'api/products/categories',
