@@ -156,14 +156,6 @@ const PopularRails = () => {
         >
           Popular Near You
         </Text>
-        <Text
-          style={{
-            fontSize: 18,
-            color: "#ed7550",
-          }}
-        >
-          Show All
-        </Text>
       </View>
       <FlatList
         data={popular_data}

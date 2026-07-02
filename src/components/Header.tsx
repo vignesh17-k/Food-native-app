@@ -5,7 +5,7 @@ interface Props {
   container_style?: any;
   left_section?: any;
   right_section?: any;
-  title: any;
+  title?: any;
 }
 
 const Header = ({

@@ -40,6 +40,14 @@ const product = {
 	},
 
 
+	get_category_details: (category_id: string) => {
+		return utils.api_request({
+			url: `api/products/category/${category_id}`,
+			method: 'GET'
+		});
+	},
+
+
 };
 
 

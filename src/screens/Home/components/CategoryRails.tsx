@@ -10,12 +10,15 @@ import {
 import _, { map } from "lodash";
 import product from "../../../../utils/api/product";
 import { Skeleton } from "native-base";
+import { useNavigation } from "@react-navigation/native";
+import constants from "../../../../utils/constants";
 
 const CategoryRail = () => {
-  const [active_category, set_active_category] = useState();
   const [category_data, set_category_data] = useState([]);
   const [loading, set_loading] = useState(true);
   const arr = Array.from({ length: 3 }, (v, i) => i);
+  const navigate: any = useNavigation();
+
 
   const handle_get_categories = async () => {
     set_loading(true);
@@ -50,10 +53,9 @@ const CategoryRail = () => {
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
         <TouchableOpacity
-          onPress={() => set_active_category(item?.id)}
+          onPress={() => navigate.navigate(constants.route_names.CategoryDetails, { category_id: item?.id , name: item?.name })}
           style={[
             styles.categoryContainer,
-            item.id === active_category && styles.activeCategoryContainer,
           ]}
         >
           <Image
@@ -63,7 +65,6 @@ const CategoryRail = () => {
           <Text
             style={[
               styles.categoryText,
-              item.id === active_category && styles.activeCategoryText,
             ]}
           >
             {item.name}
