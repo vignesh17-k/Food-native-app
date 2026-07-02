@@ -46,12 +46,12 @@ const ProductDetails = ({ route, navigation }) => {
   }, []);
 
   const wishlist_data = useSelector(
-    (state: any) => state.wishlist.wishlist_data
+    (state: any) => state.wishlist.wishlist_data,
   );
 
   const is_favorite = find(
     wishlist_data,
-    (wishlist: any) => wishlist?.id === product_details?.id
+    (wishlist: any) => wishlist?.id === product_details?.id,
   );
 
   const product_info = useMemo(() => {
@@ -111,13 +111,13 @@ const ProductDetails = ({ route, navigation }) => {
       } else {
         dispatch(add_to_wishlist_action(product_id));
       }
-    }, 2000)
+    }, 2000),
   );
 
   const handle_favorite = (data: any) => {
     const product_id_exist = find(
       wishlist_data,
-      (item: any) => item?.id === data?.id
+      (item: any) => item?.id === data?.id,
     );
     dispatch(update_wishlist(data));
     debounced_ref.current(data?.id, product_id_exist, dispatch, data);
@@ -131,11 +131,12 @@ const ProductDetails = ({ route, navigation }) => {
     icon: any,
     text: string,
     style?: any,
-    text_style?: any
+    text_style?: any,
+    index?: number,
   ) => {
     return (
       <View
-        key={text}
+        key={`text-${index}-${icon}`}
         style={{
           flexDirection: "row",
           alignItems: "center",
@@ -240,12 +241,13 @@ const ProductDetails = ({ route, navigation }) => {
             gap: 15,
           }}
         >
-          {map(product_info, (item) => {
+          {map(product_info, (item, index) => {
             return handle_render_icon(
               item?.icon,
               item?.text,
               item?.style,
-              item?.text_style
+              item?.text_style,
+              index,
             );
           })}
         </View>
