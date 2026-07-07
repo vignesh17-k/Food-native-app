@@ -10,14 +10,29 @@ export type ProductFilters = {
   tags?: string[];
 };
 
+export type ProductPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+};
+
+export const PRODUCT_PAGE_LIMIT = 10;
+
 export type ProductSearchBody = {
   search?: string;
+  page?: number;
+  limit?: number;
   filters?: ProductFilters;
 };
 
 type BuildProductSearchOptions = {
   filters?: FilterValues | null;
   search?: string;
+  page?: number;
+  limit?: number;
 };
 
 const buildProductFilters = (
@@ -72,8 +87,13 @@ const buildProductFilters = (
 export const buildProductSearchBody = ({
   filters,
   search,
+  page = 1,
+  limit = PRODUCT_PAGE_LIMIT,
 }: BuildProductSearchOptions): ProductSearchBody => {
-  const body: ProductSearchBody = {};
+  const body: ProductSearchBody = {
+    page,
+    limit,
+  };
 
   if (search?.trim()) {
     body.search = search.trim();
