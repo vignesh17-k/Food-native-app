@@ -1,17 +1,25 @@
 import React from "react";
-import { TouchableOpacity, View, Text } from "react-native";
-import { StyleSheet } from "react-native";
-import { Dimensions } from "react-native";
+import {
+  TouchableOpacity,
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  ViewStyle,
+  StyleProp,
+} from "react-native";
 import { SIZES } from "../../constants";
 import { HStack, Spinner } from "native-base";
 
+type ButtonType = "primary" | "secondary";
+
 interface Props {
   text: string;
-  type: any;
-  width?: any;
-  onClick?: () => any;
+  type: ButtonType;
+  width?: number | string;
+  onClick?: () => void;
   loading?: boolean;
-  style?: any;
+  style?: StyleProp<ViewStyle>;
 }
 
 const Button = ({ text, type, width, onClick, loading, style }: Props) => {
@@ -21,11 +29,11 @@ const Button = ({ text, type, width, onClick, loading, style }: Props) => {
         return (
           <TouchableOpacity onPress={onClick}>
             <View
-              style={{
-                ...styles.primaryButton,
-                ...style,
-                width: width,
-              }}
+              style={[
+                styles.primaryButton,
+                style,
+                width !== undefined ? { width } : null,
+              ]}
             >
               {loading ? (
                 <HStack space={2} justifyContent="center">
@@ -41,7 +49,13 @@ const Button = ({ text, type, width, onClick, loading, style }: Props) => {
       default:
         return (
           <TouchableOpacity onPress={onClick}>
-            <View style={{ ...styles.secondaryButton, ...style, width: width }}>
+            <View
+              style={[
+                styles.secondaryButton,
+                style,
+                width !== undefined ? { width } : null,
+              ]}
+            >
               <Text style={styles.secondaryButtonText}>{text}</Text>
             </View>
           </TouchableOpacity>

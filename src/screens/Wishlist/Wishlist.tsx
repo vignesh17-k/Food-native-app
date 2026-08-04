@@ -11,6 +11,7 @@ import {
   Animated,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import { FontAwesome } from "@expo/vector-icons";
 import Header from "../../components/Header";
 import { SIZES } from "../../../constants";
 import ImageLinks from "../../../assets/ImageLink";
@@ -20,7 +21,7 @@ import { remove_from_wishlist_action } from "../../../actions/wishlist";
 import { update_wishlist } from "../../../store/slices/WishlistSlice";
 import constants from "../../../utils/constants";
 
-const Wishlist = ({ navigation }) => {
+const Wishlist = ({ navigation }:any) => {
   const wishlist_data = useSelector(
     (state: any) => state?.wishlist?.wishlist_data
   );
@@ -91,7 +92,7 @@ const Wishlist = ({ navigation }) => {
     );
   };
 
-  const render_item = ({ item }) => {
+  const render_item = ({ item }:any) => {
     const translateX = new Animated.Value(0);
     const pan_responder = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -178,41 +179,32 @@ const Wishlist = ({ navigation }) => {
       />
 
       {wishlist_data?.length === 0 ? (
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <Image
-            source={ImageLinks?.empty_wishlist}
-            style={{
-              width: SIZES.width * 0.5,
-              height: SIZES.height * 0.2,
-              resizeMode: "contain",
-              marginBottom: 20,
-            }}
-          />
-          <View
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 10,
-              marginHorizontal: SIZES.width * 0.02,
-            }}
-          >
-            <Text style={{ fontSize: 20, fontWeight: "700" }}>
-              Your Wishlist is Empty
-            </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "400",
-                color: "grey",
-                textAlign: "center",
-                lineHeight: 24,
-              }}
-            >
-              Tap on the heart button to start saving your favorite items.
-            </Text>
+        <View style={styles.empty_wrap}>
+          <View style={styles.empty_glow}>
+            <View style={styles.empty_icon_circle}>
+              <FontAwesome name="heart" size={40} color="#fff" />
+            </View>
           </View>
+
+          <Text style={styles.empty_title}>No favorites yet</Text>
+          <Text style={styles.empty_subtitle}>
+            Tap the heart on dishes you love and find them here later.
+          </Text>
+
+          <TouchableOpacity
+            style={styles.empty_cta}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate(constants.route_names.Home)}
+          >
+            <Text style={styles.empty_cta_text}>Browse Menu</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.empty_secondary}
+            onPress={() => navigation.navigate(constants.route_names.Search)}
+          >
+            <Text style={styles.empty_secondary_text}>Search food</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList
@@ -261,5 +253,72 @@ const styles = StyleSheet.create({
     right: 0,
     height: "100%",
     zIndex: -1,
+  },
+  empty_wrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 28,
+    paddingBottom: SIZES.height * 0.06,
+  },
+  empty_glow: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: "#fff3ee",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 28,
+  },
+  empty_icon_circle: {
+    width: 108,
+    height: 108,
+    borderRadius: 54,
+    backgroundColor: "#ed7550",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#ed7550",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  empty_title: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#1a1a1a",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  empty_subtitle: {
+    fontSize: 15,
+    fontWeight: "400",
+    color: "#8a8a8a",
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 28,
+    maxWidth: 280,
+  },
+  empty_cta: {
+    backgroundColor: "#ed7550",
+    paddingVertical: 14,
+    paddingHorizontal: 36,
+    borderRadius: 14,
+    minWidth: 200,
+    alignItems: "center",
+  },
+  empty_cta_text: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  empty_secondary: {
+    marginTop: 16,
+    paddingVertical: 8,
+  },
+  empty_secondary_text: {
+    color: "#ed7550",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });

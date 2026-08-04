@@ -32,8 +32,9 @@ import {
   clear_product_filters,
   set_product_filters,
 } from "../../../store/slices/SearchSlice";
+import CartIcon from "../../components/CartIcon";
 
-const Home = ({ navigation }) => {
+const Home = ({ navigation }: any) => {
   const section_data = useSelector((state: any) => state?.home?.section_data);
   const navigate: any = useNavigation();
   const dispatch = useDispatch();
@@ -89,14 +90,15 @@ const Home = ({ navigation }) => {
       >
         <Header
           title={<Text style={{ fontSize: 20, fontWeight: "700" }}>HOME</Text>}
-          right_section={
+          right_section={<CartIcon />}
+          left_section={
             <TouchableOpacity onPress={handle_logout}>
-            <Image
-              source={ImageLinks.profile}
-              alt="search"
-              style={{ height: 45, width: 45, borderRadius: 10 }}
-            />
-          </TouchableOpacity>
+              <Image
+                source={ImageLinks.profile}
+                alt="search"
+                style={{ height: 45, width: 45, borderRadius: 10 }}
+              />
+            </TouchableOpacity>
           }
           // left_section={
           //   <TouchableOpacity onPress={handle_logout}>
@@ -137,7 +139,10 @@ const Home = ({ navigation }) => {
   const handle_render_search = () => {
     return (
       <View style={styles.search_container}>
-        <TouchableOpacity style={styles.search_input_area} onPress={handle_click}>
+        <TouchableOpacity
+          style={styles.search_input_area}
+          onPress={handle_click}
+        >
           <Image
             source={ImageLinks.search}
             alt="search"
@@ -167,7 +172,7 @@ const Home = ({ navigation }) => {
     );
   };
 
-  const render_section = ({ item }) => {
+  const render_section = ({ item }: any) => {
     switch (item.section) {
       case "delivery":
         return handle_render_deliver_section();
@@ -216,7 +221,7 @@ const Home = ({ navigation }) => {
         contentContainerStyle={styles?.content}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
+          { useNativeDriver: true },
         )}
         scrollEventThrottle={1}
       />
