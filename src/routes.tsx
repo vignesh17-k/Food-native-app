@@ -10,6 +10,7 @@ import Otp from "./screens/OtpScreen/Otp";
 import TabBar from "./components/Tabs";
 import constants from "../utils/constants";
 import ProductDetails from "./screens/ProductDetails/ProductDetails";
+import CategoryDetails from "./screens/CategoryDetails/CategoryDetails";
 
 const Stack = createNativeStackNavigator();
 
@@ -43,6 +44,10 @@ const Routes = () => {
       <Stack.Screen
         name={constants.route_names.ProductDetails}
         component={ProductDetails}
+      />
+      <Stack.Screen
+        name={constants.route_names.CategoryDetails}
+        component={CategoryDetails}
       />
     </Stack.Navigator>
   );

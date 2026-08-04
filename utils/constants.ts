@@ -15,7 +15,8 @@ const constants = {
         Cart: "cart",
         Wishlist: "wishlist",
         Notifications: "notifications",
-        ProductDetails: "productdetails"
+        ProductDetails: "productdetails",
+        CategoryDetails: "categorydetails",
     },
     bottom_tabs: [
         {

@@ -1,8 +1,7 @@
 import constants from "../constants";
 import { FilterValues } from "../../src/screens/Home/components/FilterModal";
 
-export type ProductSearchBody = {
-  search?: string;
+export type ProductFilters = {
   minPrice?: number;
   maxPrice?: number;
   rating?: number;
@@ -11,36 +10,51 @@ export type ProductSearchBody = {
   tags?: string[];
 };
 
+export type ProductPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+};
+
+export const PRODUCT_PAGE_LIMIT = 10;
+
+export type ProductSearchBody = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  filters?: ProductFilters;
+};
+
 type BuildProductSearchOptions = {
   filters?: FilterValues | null;
   search?: string;
+  page?: number;
+  limit?: number;
 };
 
-export const buildProductSearchBody = ({
-  filters,
-  search,
-}: BuildProductSearchOptions): ProductSearchBody => {
-  const body: ProductSearchBody = {};
-
-  if (search?.trim()) {
-    body.search = search.trim();
-  }
+const buildProductFilters = (
+  filters: FilterValues | null | undefined
+): ProductFilters => {
+  const result: ProductFilters = {};
 
   if (!filters) {
-    return body;
+    return result;
   }
 
   if (filters.priceMin > 0) {
-    body.minPrice = filters.priceMin;
+    result.minPrice = filters.priceMin;
   }
   if (filters.priceMax < 100) {
-    body.maxPrice = filters.priceMax;
+    result.maxPrice = filters.priceMax;
   }
 
   if (filters.rating !== null) {
     const rating = constants.ratings.find((item) => item.id === filters.rating);
     if (rating) {
-      body.rating = rating.label;
+      result.rating = rating.label;
     }
   }
 
@@ -49,12 +63,12 @@ export const buildProductSearchBody = ({
       (item) => item.id === filters.deliveryTime
     );
     if (delivery) {
-      body.maxDeliveryTime = delivery.minutes;
+      result.maxDeliveryTime = delivery.minutes;
     }
   }
 
   if (filters.distanceMax < 20) {
-    body.maxDistance = filters.distanceMax;
+    result.maxDistance = filters.distanceMax;
   }
 
   if (filters.tags.length > 0) {
@@ -63,8 +77,31 @@ export const buildProductSearchBody = ({
       .filter((slug): slug is string => Boolean(slug));
 
     if (tagSlugs.length > 0) {
-      body.tags = tagSlugs;
+      result.tags = tagSlugs;
     }
+  }
+
+  return result;
+};
+
+export const buildProductSearchBody = ({
+  filters,
+  search,
+  page = 1,
+  limit = PRODUCT_PAGE_LIMIT,
+}: BuildProductSearchOptions): ProductSearchBody => {
+  const body: ProductSearchBody = {
+    page,
+    limit,
+  };
+
+  if (search?.trim()) {
+    body.search = search.trim();
+  }
+
+  const filterParams = buildProductFilters(filters);
+  if (Object.keys(filterParams).length > 0) {
+    body.filters = filterParams;
   }
 
   return body;

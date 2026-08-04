@@ -11,11 +11,19 @@ import {
 } from "react-native";
 import { SIZES } from "../../../constants";
 import ImageLinks from "../../../assets/ImageLink";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import product from "../../../utils/api/product";
-import { buildProductSearchBody, hasActiveFilters } from "../../../utils/api/buildProductFilterParams";
+import {
+  buildProductSearchBody,
+  hasActiveFilters,
+  ProductPagination,
+  PRODUCT_PAGE_LIMIT,
+} from "../../../utils/api/buildProductFilterParams";
 import constants from "../../../utils/constants";
 import { FontAwesome } from "@expo/vector-icons";
 import { debounce, find } from "lodash";
@@ -52,8 +60,16 @@ const Search = () => {
   const [search_value, set_search_value] = useState("");
   const [products, set_products] = useState<any[]>([]);
   const [loading, set_loading] = useState(true);
+  const [loading_more, set_loading_more] = useState(false);
   const [error, set_error] = useState("");
   const [filter_visible, set_filter_visible] = useState(false);
+  const [pagination, set_pagination] = useState<
+    Pick<ProductPagination, "page" | "total" | "has_next">
+  >({
+    page: 1,
+    total: 0,
+    has_next: false,
+  });
 
   const debounced_wishlist_ref = useRef(
     debounce((product_id: string, exists: any, dispatch: any, data: any) => {
@@ -72,9 +88,21 @@ const Search = () => {
   search_value_ref.current = search_value;
 
   const load_products = useCallback(
-    async (overrides?: { search?: string; filters?: FilterValues | null }) => {
-      set_loading(true);
-      set_error("");
+    async (overrides?: {
+      search?: string;
+      filters?: FilterValues | null;
+      page?: number;
+      append?: boolean;
+    }) => {
+      const is_append = overrides?.append ?? false;
+      const next_page = overrides?.page ?? 1;
+
+      if (is_append) {
+        set_loading_more(true);
+      } else {
+        set_loading(true);
+        set_error("");
+      }
 
       try {
         const body = buildProductSearchBody({
@@ -83,20 +111,36 @@ const Search = () => {
             overrides?.filters !== undefined
               ? overrides.filters
               : product_filters_ref.current,
+          page: next_page,
+          limit: PRODUCT_PAGE_LIMIT,
         });
         const response = await product.get_products(body);
         const list =
+          response?.data ??
           response?.products ??
           response?.data?.products ??
-          response?.data ??
           [];
-        set_products(Array.isArray(list) ? list : []);
+        const next_list = Array.isArray(list) ? list : [];
+        const pagination_info = response?.pagination;
+
+        set_products((prev) =>
+          is_append ? [...prev, ...next_list] : next_list,
+        );
+        set_pagination({
+          page: pagination_info?.page ?? next_page,
+          total: pagination_info?.total ?? next_list.length,
+          has_next: pagination_info?.has_next ?? false,
+        });
       } catch (err) {
         console.error(err);
-        set_error("Unable to load products. Please try again.");
-        set_products([]);
+        if (!is_append) {
+          set_error("Unable to load products. Please try again.");
+          set_products([]);
+          set_pagination({ page: 1, total: 0, has_next: false });
+        }
       } finally {
         set_loading(false);
+        set_loading_more(false);
       }
     },
     [],
@@ -107,9 +151,17 @@ const Search = () => {
 
   const debounced_search_ref = useRef(
     debounce((search: string) => {
-      load_products_ref.current({ search });
+      load_products_ref.current({ search, page: 1 });
     }, SEARCH_DEBOUNCE_MS),
   );
+
+  const handle_load_more = () => {
+    if (loading || loading_more || !pagination.has_next) {
+      return;
+    }
+
+    load_products({ page: pagination.page + 1, append: true });
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -148,17 +200,17 @@ const Search = () => {
 
     if (hasActiveFilters(filters)) {
       dispatch(set_product_filters(filters));
-      load_products({ filters });
+      load_products({ filters, page: 1 });
       return;
     }
 
     dispatch(clear_product_filters());
-    load_products({ filters: null });
+    load_products({ filters: null, page: 1 });
   };
 
   const handle_clear_filters = () => {
     dispatch(clear_product_filters());
-    load_products({ filters: null });
+    load_products({ filters: null, page: 1 });
   };
 
   const handle_render_search = () => {
@@ -204,8 +256,9 @@ const Search = () => {
 
   const handle_render_section_header = () => {
     const show_count = !loading || products.length > 0;
+    const total_results = pagination.total || products.length;
     const result_label =
-      products.length === 1 ? "1 result" : `${products.length} results`;
+      total_results === 1 ? "1 result" : `${total_results} results`;
 
     return (
       <View style={styles.section_header_wrap}>
@@ -219,9 +272,7 @@ const Search = () => {
             </TouchableOpacity>
           )}
         </View>
-        {show_count && (
-          <Text style={styles.results_count}>{result_label}</Text>
-        )}
+        {show_count && <Text style={styles.results_count}>{result_label}</Text>}
       </View>
     );
   };
@@ -336,12 +387,21 @@ const Search = () => {
           { paddingBottom: list_bottom_padding },
         ]}
         ListHeaderComponent={
-          loading ? (
+          loading && products.length > 0 ? (
             <View style={styles.list_loading}>
               <ActivityIndicator size="small" color="#ed7550" />
             </View>
           ) : null
         }
+        ListFooterComponent={
+          loading_more ? (
+            <View style={styles.list_loading}>
+              <ActivityIndicator size="small" color="#ed7550" />
+            </View>
+          ) : null
+        }
+        onEndReached={handle_load_more}
+        onEndReachedThreshold={0.4}
         showsVerticalScrollIndicator={false}
       />
     );
