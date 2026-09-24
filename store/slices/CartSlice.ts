@@ -3,13 +3,19 @@ import type { Product } from "../../types/product";
 
 export type CartProduct = Product & {
   quantity?: number;
+  selectedSize?: string;
 };
+
+export type CartProductsMap = Record<
+  string,
+  Record<string, CartProduct>
+>;
 
 export type CartData = {
   id?: string;
   _id?: string;
   user_id?: string;
-  products?: CartProduct[];
+  products?: CartProduct[] | CartProductsMap;
 };
 
 type CartState = {
@@ -33,7 +39,10 @@ const CartSlice = createSlice({
     clear_cart: (state) => {
       state.cart_data = null;
     },
-    set_cart_products: (state, { payload }: PayloadAction<CartProduct[]>) => {
+    set_cart_products: (
+      state,
+      { payload }: PayloadAction<CartProduct[] | CartProductsMap>,
+    ) => {
       if (state.cart_data) {
         state.cart_data.products = payload;
       }

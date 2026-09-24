@@ -11,6 +11,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import Header from "../../components/Header";
 import { SIZES } from "../../../constants";
@@ -30,15 +31,19 @@ import { update_wishlist } from "../../../store/slices/WishlistSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Counter from "../../components/Counter";
 import { LayoutChangeEvent } from "react-native";
+import cart from "../../../utils/api/cart";
 
-const ProductDetails = ({ route, navigation }) => {
+const ProductDetails = ({ route, navigation }: any) => {
   const { id } = route.params;
   const [loading, set_loading] = useState(false);
   const [product_details, set_product_details] = useState<any>({});
   const [selected_size, set_selected_size] = useState<any>(null);
+  const [quantity, set_quantity] = useState(1);
+  const [add_to_cart_loading, set_add_to_cart_loading] = useState(false);
   const dispatch = useDispatch();
 
   const [footer_height, set_footer_height] = useState(0);
+  const cart_data = useSelector((state: any) => state?.cart?.cart_data);
 
   const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout;
@@ -320,16 +325,56 @@ const ProductDetails = ({ route, navigation }) => {
     );
   };
 
+  const handle_add_products_to_cart = async () => {
+    set_add_to_cart_loading(true);
+    try {
+      const payload = {
+        product_id: product_details?.id,
+        quantity: quantity,
+        selectedSize: selected_size,
+        cart_id: cart_data?.cart_id,
+      };
+      const response = await cart.add_to_cart(payload);
+      console.log(response, "response");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      set_add_to_cart_loading(false);
+    }
+  };
+
+  const handle_add_to_cart = () => {
+    console.log("quantity", quantity);
+    handle_add_products_to_cart();
+  };
+
   const handle_cart_btn = () => {
+    const total_price = (product_details?.price ?? 0) * quantity;
+
     return (
-      <TouchableOpacity style={{ flex: 1 }}>
-        <View style={styles.cart_btn}>
-          <Text style={{ color: "white", fontWeight: "700", fontSize: 16 }}>
-            Add to Cart
-          </Text>
-          <Text style={{ color: "white", fontWeight: "700", fontSize: 16 }}>
-            ${product_details?.price}
-          </Text>
+      <TouchableOpacity
+        style={{ flex: 1 }}
+        onPress={handle_add_to_cart}
+        disabled={add_to_cart_loading}
+      >
+        <View
+          style={[
+            styles.cart_btn,
+            add_to_cart_loading && styles.cart_btn_loading,
+          ]}
+        >
+          {add_to_cart_loading ? (
+            <ActivityIndicator color="white" size="small" />
+          ) : (
+            <>
+              <Text style={{ color: "white", fontWeight: "700", fontSize: 16 }}>
+                Add to Cart
+              </Text>
+              <Text style={{ color: "white", fontWeight: "700", fontSize: 16 }}>
+                ${total_price}
+              </Text>
+            </>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -381,7 +426,7 @@ const ProductDetails = ({ route, navigation }) => {
           </ScrollView>
 
           <View style={styles.footer_section} onLayout={handleFooterLayout}>
-            <Counter />
+            <Counter value={quantity} onChange={set_quantity} />
             {handle_cart_btn()}
           </View>
         </>
@@ -460,5 +505,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 20,
     width: "100%",
+    minHeight: 62,
+  },
+  cart_btn_loading: {
+    justifyContent: "center",
   },
 });

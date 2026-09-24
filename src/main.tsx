@@ -24,7 +24,7 @@ const MainApp = () => {
 
     try {
       const response = await cart.initialize_cart({ user_id });
-      const cart_data = response?.data ?? response;
+      const cart_data = response?.data ?? response;  
       if (cart_data) {
         dispatch(set_cart(cart_data));
       }
@@ -32,6 +32,7 @@ const MainApp = () => {
       console.error("Initialize Cart Error:", error);
     }
   };
+
 
   const handle_session_change = (
     event: AuthChangeEvent,

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Image,
@@ -11,62 +11,105 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Skeleton } from "native-base";
 import Header from "../../components/Header";
 import { SIZES } from "../../../constants";
 import ImageLinks from "../../../assets/ImageLink";
-import Button from "../../components/Button";
 import constants from "../../../utils/constants";
-import {
-  set_cart_products,
-  type CartProduct,
-} from "../../../store/slices/CartSlice";
+import { set_cart, set_cart_products } from "../../../store/slices/CartSlice";
+import cart from "../../../utils/api/cart";
+
+type CartLineItem = {
+  product_id: string;
+  cart_item_id: string;
+  id?: string;
+  name?: string;
+  image?: string;
+  price?: number;
+  quantity?: number;
+  selectedSize?: string;
+};
+
+type CartProductsMap = Record<
+  string,
+  Record<string, Omit<CartLineItem, "product_id" | "cart_item_id">>
+>;
+
+const flatten_cart_products = (
+  products: CartProductsMap | CartLineItem[] | null | undefined,
+): CartLineItem[] => {
+  if (!products) {
+    return [];
+  }
+
+  if (Array.isArray(products)) {
+    return products;
+  }
+
+  return Object.entries(products).flatMap(([product_id, variants]) => {
+    if (!variants || typeof variants !== "object") {
+      return [];
+    }
+
+    return Object.entries(variants).map(([cart_item_id, item]) => ({
+      product_id,
+      cart_item_id,
+      ...item,
+    }));
+  });
+};
 
 const Cart = ({ navigation }: any) => {
+  const [loading, set_loading] = useState(true);
   const dispatch = useDispatch();
-  const cart_products =
-    useSelector((state: any) => state?.cart?.cart_data?.products) ?? [];
+  const cart_data = useSelector((state: any) => state?.cart?.cart_data);
 
-  const handle_delete = (item: CartProduct) => {
-    const next_products = cart_products.filter(
-      (product: CartProduct) => product?.id !== item?.id,
-    );
-    dispatch(set_cart_products(next_products));
+  const cart_products = cart_data?.products;
+
+  const cart_items = useMemo(
+    () => flatten_cart_products(cart_products),
+    [cart_products],
+  );
+
+  console.log(cart_items, "cart_items");
+  console.log(cart_data, "cart_data");
+  console.log(cart_products, "cart_products");
+
+  const handle_get_cart_details = async () => {
+    set_loading(true);
+    try {
+      const response = await cart.get_cart_details();
+      const cart_data = response?.data ?? response;
+      dispatch(set_cart(cart_data));
+    } catch (error) {
+      console.error("Get Cart Details Error:", error);
+    } finally {
+      set_loading(false);
+    }
   };
 
-  const handle_render_item = (item: CartProduct) => {
+  useEffect(() => {
+    handle_get_cart_details();
+  }, []);
+
+  const handle_delete = (item: CartLineItem) => {};
+
+  const handle_render_item = (item: CartLineItem) => {
+    const line_total = (item?.price ?? 0) * (item?.quantity ?? 1);
+
     return (
       <React.Fragment>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate(constants.route_names.ProductDetails, {
-              id: item?.id,
+              id: item?.product_id || item?.id,
             });
           }}
         >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            <Image
-              src={item?.image}
-              style={{
-                resizeMode: "contain",
-                marginTop: 10,
-                height: SIZES.height * 0.1,
-                width: SIZES.width * 0.2,
-              }}
-              alt="img"
-            />
+          <View style={styles.item_row}>
+            <Image src={item?.image} style={styles.item_image} alt="img" />
 
-            <View
-              style={{
-                justifyContent: "center",
-                gap: 5,
-              }}
-            >
+            <View style={styles.item_info}>
               <Text
                 style={styles.cart_name}
                 numberOfLines={2}
@@ -74,24 +117,19 @@ const Cart = ({ navigation }: any) => {
               >
                 {item?.name}
               </Text>
-              <Text style={styles.cart_price}>${item?.price}</Text>
+              {!!item?.selectedSize && (
+                <Text style={styles.item_meta}>Size: {item.selectedSize}</Text>
+              )}
+              <Text style={styles.item_meta}>Qty: {item?.quantity ?? 1}</Text>
+              <Text style={styles.cart_price}>${line_total.toFixed(2)}</Text>
             </View>
           </View>
         </TouchableOpacity>
-
-        <Button
-          text={"Add To Cart"}
-          type="primary"
-          style={{
-            marginHorizontal: 5,
-          }}
-          width={SIZES.width * 0.3}
-        />
       </React.Fragment>
     );
   };
 
-  const render_item = ({ item }: { item: CartProduct }) => {
+  const render_item = ({ item }: { item: CartLineItem }) => {
     const translateX = new Animated.Value(0);
     const pan_responder = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -119,11 +157,7 @@ const Cart = ({ navigation }: any) => {
     return (
       <View style={{ flexDirection: "row" }}>
         <Animated.View style={{ transform: [{ translateX }] }}>
-          <View
-            {...pan_responder.panHandlers}
-            key={item?.id}
-            style={styles.cart_item}
-          >
+          <View {...pan_responder.panHandlers} style={styles.cart_item}>
             {handle_render_item(item)}
           </View>
         </Animated.View>
@@ -132,17 +166,78 @@ const Cart = ({ navigation }: any) => {
           style={styles.delete_btn}
           onPress={() => handle_delete(item)}
         >
-          <Text
-            style={{
-              fontSize: 18,
-              color: "#fff",
-              fontWeight: "700",
-            }}
-          >
-            Delete
-          </Text>
+          <Text style={styles.delete_text}>Delete</Text>
         </TouchableOpacity>
       </View>
+    );
+  };
+
+  const render_skeleton = () => (
+    <View style={styles.skeleton_container}>
+      {[1, 2, 3, 4].map((item) => (
+        <View key={item} style={styles.skeleton_item}>
+          <Skeleton
+            height={SIZES.height * 0.1}
+            width={SIZES.width * 0.2}
+            borderRadius={10}
+          />
+          <View style={styles.skeleton_text_wrap}>
+            <Skeleton height={4} width="70%" borderRadius={8} />
+            <Skeleton height={3} width="40%" borderRadius={8} mt={2} />
+          </View>
+          <Skeleton height={10} width={SIZES.width * 0.25} borderRadius={10} />
+        </View>
+      ))}
+    </View>
+  );
+
+  const render_content = () => {
+    if (loading) {
+      return render_skeleton();
+    }
+
+    if (cart_items.length === 0) {
+      return (
+        <View style={styles.empty_wrap}>
+          <View style={styles.empty_glow}>
+            <View style={styles.empty_icon_circle}>
+              <Image source={ImageLinks.cart} style={styles.empty_cart_icon} />
+            </View>
+          </View>
+
+          <Text style={styles.empty_title}>Hungry? Your cart is empty</Text>
+          <Text style={styles.empty_subtitle}>
+            Browse delicious meals and add your favorites to get started.
+          </Text>
+
+          <TouchableOpacity
+            style={styles.empty_cta}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate(constants.route_names.Home)}
+          >
+            <Text style={styles.empty_cta_text}>Browse Menu</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.empty_secondary}
+            onPress={() => navigation.navigate(constants.route_names.Search)}
+          >
+            <Text style={styles.empty_secondary_text}>Search food</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <FlatList
+        data={cart_items}
+        renderItem={render_item}
+        keyExtractor={(item) =>
+          `${item.product_id}-${item.cart_item_id}-${item.selectedSize ?? ""}`
+        }
+        contentContainerStyle={styles.cart_container}
+        showsVerticalScrollIndicator={false}
+      />
     );
   };
 
@@ -175,46 +270,7 @@ const Cart = ({ navigation }: any) => {
         right_section={null}
       />
 
-      {cart_products.length === 0 ? (
-        <View style={styles.empty_wrap}>
-          <View style={styles.empty_glow}>
-            <View style={styles.empty_icon_circle}>
-              <Image
-                source={ImageLinks.cart}
-                style={styles.empty_cart_icon}
-              />
-            </View>
-          </View>
-
-          <Text style={styles.empty_title}>Hungry? Your cart is empty</Text>
-          <Text style={styles.empty_subtitle}>
-            Browse delicious meals and add your favorites to get started.
-          </Text>
-
-          <TouchableOpacity
-            style={styles.empty_cta}
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate(constants.route_names.Home)}
-          >
-            <Text style={styles.empty_cta_text}>Browse Menu</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.empty_secondary}
-            onPress={() => navigation.navigate(constants.route_names.Search)}
-          >
-            <Text style={styles.empty_secondary_text}>Search food</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <FlatList
-          data={cart_products}
-          renderItem={render_item}
-          keyExtractor={(item) => `${item?.id?.toString()}${item?.name}`}
-          contentContainerStyle={styles.cart_container}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+      {render_content()}
     </SafeAreaView>
   );
 };
@@ -232,11 +288,31 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    width: SIZES.width - 40,
+  },
+  item_row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  item_image: {
+    resizeMode: "contain",
+    height: SIZES.height * 0.1,
+    width: SIZES.width * 0.2,
+  },
+  item_info: {
+    justifyContent: "center",
+    gap: 4,
   },
   cart_name: {
     fontSize: 18,
-    width: 150,
+    width: 180,
+  },
+  item_meta: {
+    fontSize: 13,
+    color: "#888",
   },
   cart_price: {
     color: "#ed7550",
@@ -253,6 +329,27 @@ const styles = StyleSheet.create({
     right: 0,
     height: "100%",
     zIndex: -1,
+  },
+  delete_text: {
+    fontSize: 18,
+    color: "#fff",
+    fontWeight: "700",
+  },
+  skeleton_container: {
+    marginHorizontal: 20,
+    gap: 12,
+  },
+  skeleton_item: {
+    backgroundColor: "#f6f6f8",
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    gap: 12,
+  },
+  skeleton_text_wrap: {
+    flex: 1,
+    justifyContent: "center",
   },
   empty_wrap: {
     flex: 1,

@@ -11,9 +11,18 @@ type CartIconParamList = {
 
 const CartIcon = () => {
   const navigation = useNavigation<NavigationProp<CartIconParamList>>();
+
   const cart_products =
-    useSelector((state: any) => state?.cart?.cart_data?.products) ?? [];
-  const count = cart_products.length;
+    useSelector((state: any) => state?.cart?.cart_data?.products) ?? {};
+
+  const count = Array.isArray(cart_products)
+    ? cart_products.length
+    : Object.values(cart_products).reduce((total: number, variants: any) => {
+        if (!variants || typeof variants !== "object") {
+          return total;
+        }
+        return total + Object.keys(variants).length;
+      }, 0);
 
   return (
     <TouchableOpacity
