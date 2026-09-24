@@ -8,42 +8,52 @@ import * as Updates from "expo-updates";
 import DeepLinkHandler from "./src/components/DeepLinking";
 import { PersistGate } from "redux-persist/integration/react";
 
-export default function App() {
+function AppContent() {
   const toast = useToast();
 
+  useEffect(() => {
+    if (__DEV__) {
+      return;
+    }
+
+    async function on_fetch_update_async() {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync();
+          await Updates.reloadAsync();
+        }
+      } catch (error) {
+        toast.show({
+          title: `Error fetching latest Expo update: ${error}`,
+          placement: "top",
+        });
+      }
+    }
+
+    on_fetch_update_async();
+  }, [toast]);
+
+  return (
+    <NavigationContainer>
+      <PersistGate persistor={persistor}>
+        <MainApp />
+      </PersistGate>
+      <DeepLinkHandler />
+    </NavigationContainer>
+  );
+}
+
+export default function App() {
   if (__DEV__) {
     require("./ReactotronConfig");
   }
 
-  async function on_fetch_update_async() {
-    try {
-      const update = await Updates.checkForUpdateAsync();
-
-      if (update.isAvailable) {
-        await Updates.fetchUpdateAsync();
-        await Updates.reloadAsync();
-      }
-    } catch (error) {
-      toast.show({
-        title: `Error fetching latest Expo update: ${error}`,
-        placement: "top",
-      });
-    }
-  }
-
-  useEffect(() => {
-    on_fetch_update_async();
-  }, []);
-
   return (
     <Provider store={store}>
       <NativeBaseProvider>
-        <NavigationContainer>
-          <PersistGate persistor={persistor}>
-            <MainApp />
-          </PersistGate>
-          <DeepLinkHandler />
-        </NavigationContainer>
+        <AppContent />
       </NativeBaseProvider>
     </Provider>
   );
