@@ -6,7 +6,7 @@ import Routes from "./routes";
 import { supabase } from "../supabase.config";
 import { setLogin } from "../store/slices/LoginSlice";
 import { useDispatch } from "react-redux";
-import { useToast } from "native-base";
+import { useAppToast } from "./context/AppToast";
 import { setSession } from "../store/slices/User";
 import { set_cart, clear_cart } from "../store/slices/CartSlice";
 import Loader from "./components/Loader";
@@ -14,7 +14,7 @@ import cart from "../utils/api/cart";
 
 const MainApp = () => {
   const dispatch = useDispatch();
-  const toast = useToast();
+  const toast = useAppToast();
   const [loading, set_loading] = useState(false);
 
   const initialize_user_cart = async (user_id?: string | null) => {

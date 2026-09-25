@@ -1,15 +1,17 @@
 import React, { useEffect } from "react";
 import { Provider } from "react-redux";
 import { store, persistor } from "./store/store";
-import { NativeBaseProvider, useToast } from "native-base";
+import { NativeBaseProvider } from "native-base";
 import MainApp from "./src/main";
 import { NavigationContainer } from "@react-navigation/native";
 import * as Updates from "expo-updates";
 import DeepLinkHandler from "./src/components/DeepLinking";
 import { PersistGate } from "redux-persist/integration/react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AppToastProvider, useAppToast } from "./src/context/AppToast";
 
 function AppContent() {
-  const toast = useToast();
+  const toast = useAppToast();
 
   useEffect(() => {
     if (__DEV__) {
@@ -53,7 +55,11 @@ export default function App() {
   return (
     <Provider store={store}>
       <NativeBaseProvider>
-        <AppContent />
+        <SafeAreaProvider>
+          <AppToastProvider>
+            <AppContent />
+          </AppToastProvider>
+        </SafeAreaProvider>
       </NativeBaseProvider>
     </Provider>
   );

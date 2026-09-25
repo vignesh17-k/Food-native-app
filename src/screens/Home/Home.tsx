@@ -18,7 +18,7 @@ import RecommendedRails from "./components/RecommendedRails";
 import _ from "lodash";
 import constants from "../../../utils/constants";
 import MenuRails from "./components/MenuRails";
-import { useToast } from "native-base";
+import { useAppToast } from "../../context/AppToast";
 import { supabase } from "../../../supabase.config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setLogin } from "../../../store/slices/LoginSlice";
@@ -38,7 +38,7 @@ const Home = ({ navigation }: any) => {
   const section_data = useSelector((state: any) => state?.home?.section_data);
   const navigate: any = useNavigation();
   const dispatch = useDispatch();
-  const toast = useToast();
+  const toast = useAppToast();
   const [filter_visible, set_filter_visible] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0))?.current;

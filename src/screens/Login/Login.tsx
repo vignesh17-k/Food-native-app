@@ -8,7 +8,8 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { Image, Text, View, useToast } from "native-base";
+import { Image, Text, View } from "native-base";
+import { useAppToast } from "../../context/AppToast";
 import { SIZES } from "../../../constants";
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
@@ -31,7 +32,7 @@ const Login = ({ navigation }) => {
     webClientId:
       "256385423646-9i5235emvqtjbg012oq00724b28vbcmm.apps.googleusercontent.com",
   });
-  const toast = useToast();
+  const toast = useAppToast();
   const login_type = useSelector((state: any) => state?.login?.loginType);
   const navigate: any = useNavigation();
 
